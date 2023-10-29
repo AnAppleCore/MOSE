@@ -3,10 +3,11 @@ import random
 import numpy as np
 import torch
 import os
+import warnings
 from multi_runs import multiple_run
 
 os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
-
+warnings.filterwarnings('ignore')
 
 def bool2string(s):
     if s in {'True', 'true', 'T', 't'}:

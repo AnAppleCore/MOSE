@@ -26,3 +26,30 @@ def Rotation(x):
     # rotation augmentation in OCM
     X = rot_inner_all(x)
     return torch.cat((X, torch.rot90(X, 2, (2, 3)), torch.rot90(X, 1, (2, 3)), torch.rot90(X, 3, (2, 3))), dim=0)
+
+
+def flip_inner(x, flip1, flip2):
+    bsz = x.size(0)
+    a = x
+    a = a.view(bsz, 3, 2, 16, 32)
+    a = a.permute(2, 0, 1, 3, 4)
+    s1 = a[0]
+    s2 = a[1]
+    if flip1:
+        s1 = torch.flip(s1, (3,))
+    if flip2:
+        s2 = torch.flip(s2, (3,))
+    s = torch.cat((s1.unsqueeze(2), s2.unsqueeze(2)), dim=2)
+    S = s.reshape(bsz, 3, 32, 32)
+    return S
+
+def RandomFlip(x, flip_num):
+    X = []
+    X.append(x)
+    X.append(flip_inner(x, 1, 1))
+    X.append(flip_inner(x, 0, 1))
+    X.append(flip_inner(x, 1, 0))
+    return torch.cat([X[i] for i in range(flip_num)], dim=0)
+
+def GlobalRotation(x):
+    return torch.cat((x, torch.rot90(x, 2, (2, 3)), torch.rot90(x, 1, (2, 3)), torch.rot90(x, 3, (2, 3))), dim=0)

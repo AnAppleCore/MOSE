@@ -53,6 +53,10 @@ class Buffer(nn.Module):
     @property
     def y(self):
         return self.to_one_hot(self.by[:self.current_index])
+    
+    @property
+    def y_int(self):
+        return self.by[:self.current_index]
 
     @property
     def t(self):
@@ -61,6 +65,9 @@ class Buffer(nn.Module):
     @property
     def valid(self):
         return self.is_valid[:self.current_index]
+    
+    def __len__(self):
+        return self.current_index
 
     def display(self, gen=None, epoch=-1):
         from torchvision.utils import save_image
@@ -250,3 +257,7 @@ class Buffer(nn.Module):
                     return bx[indices], by[indices], logits[indices], bt[indices]
         else:
             return 0
+        
+    def print_per_task_num(self):
+        _, counts = torch.unique(self.bt, return_counts=True)
+        print(f"Number of buffed imgs: {counts.tolist()}")

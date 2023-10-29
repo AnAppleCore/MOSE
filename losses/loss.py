@@ -302,3 +302,30 @@ def Supervised_NT_xent_uni(sim_matrix, labels, temperature=0.5, chunk=2, eps=1e-
     Mask1 = Mask1 / (Mask1.sum(dim=1, keepdim=True) + eps)
 
     return torch.sum(Mask1 * sim_matrix) / (2 * B)
+
+
+def Supervised_NT_xent_distill(sim_matrix, labels, temperature=0.5, chunk=2, eps=1e-8):
+    """
+        Code from OCM: https://github.com/gydpku/OCM
+        Compute NT_xent loss
+        - sim_matrix: (B', B') tensor for B' = B * chunk (first 2B are pos samples)
+    """
+
+    device = sim_matrix.device
+    labels1 = labels
+
+    logits_max, _ = torch.max(sim_matrix, dim=1, keepdim=True)
+
+    sim_matrix = sim_matrix - logits_max.detach()
+    B = sim_matrix.size(0) // chunk
+
+    sim_matrix = torch.exp(sim_matrix / temperature)
+    denom = torch.sum(sim_matrix, dim=1, keepdim=True)
+
+    sim_matrix = -torch.log(sim_matrix / (denom + eps) + eps)
+    labels1 = labels1.contiguous().view(-1, 1)
+
+    Mask1 = torch.eq(labels1, labels1.t()).float().to(device)
+    Mask1 = Mask1 / (Mask1.sum(dim=1, keepdim=True) + eps)
+
+    return torch.sum(Mask1 * sim_matrix) / (2 * B)

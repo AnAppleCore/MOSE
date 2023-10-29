@@ -2,11 +2,13 @@ import datetime
 
 import numpy as np
 import torch
-from torch.optim import Adam
+from torch.optim import Adam, SGD
 from experiment.dataset import get_data
 from models.buffer import Buffer
 from train import TrainLearner
+from train_scd import TrainLearner_SCD
 from models.Resnet18 import resnet18
+from models.Resnet18_SD import resnet18_sd
 from utils.util import compute_performance
 
 
@@ -24,9 +26,16 @@ def multiple_run(args):
         args.n_classes = class_num
         buffer = Buffer(args, input_size).cuda()
 
-        model = resnet18(class_num).cuda()
-        optimizer = Adam(model.parameters(), lr=args.lr, betas=(0.9, 0.99), weight_decay=1e-4)
-        agent = TrainLearner(model, buffer, optimizer, class_num, class_per_task, input_size, args)
+        #TODO self-defined code here
+        # model = resnet18(class_num).cuda()
+        model = resnet18_sd(class_num).cuda()
+        # optimizer = Adam(model.parameters(), lr=args.lr, betas=(0.9, 0.99), weight_decay=1e-4)
+        optimizer = SGD(model.parameters(), lr=args.lr, weight_decay=0)
+        # optimizer = SGD(model.parameters(), lr=args.lr, weight_decay=5e-4, momentum=0.9)
+        # optimizer = Adam(model.parameters(), lr=args.lr,  weight_decay=1e-4)
+        # agent = TrainLearner(model, buffer, optimizer, class_num, class_per_task, input_size, args)
+        # agent = TrainLearner_SCR(model, buffer, optimizer, class_num, class_per_task, input_size, args)
+        agent = TrainLearner_SCD(model, buffer, optimizer, class_num, class_per_task, input_size, args)
 
         for i in range(len(task_loader)):
             print(f"-----------------------------run {run} task id:{i} start training-----------------------------")

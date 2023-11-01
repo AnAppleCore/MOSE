@@ -197,6 +197,7 @@ class TrainLearner_SCD(object):
                             distill_loss = 0.
                             if i != len(feat_list)-1:
                                 distill_loss = self.CrossEntropyDistill(pred, pred_list[i+1].detach(), 3.0)
+                                # distill_loss = self.CrossEntropyDistill(feat, feat_list[i+1].detach(), 3.0)
 
                             loss += ins_loss + ce_loss + distill_loss
                             loss_log['ins'] += ins_loss
@@ -224,10 +225,13 @@ class TrainLearner_SCD(object):
 
                             ce_loss = 0.
                             ce_loss += F.cross_entropy(pred, new_y)
+                            # if i == len(feat_list)-1:
+                            #     ce_loss += F.cross_entropy(pred, new_y)
 
                             distill_loss = 0.
                             if i != len(feat_list)-1:
                                 distill_loss = self.CrossEntropyDistill(pred, pred_list[i+1].detach(), 3.0)
+                                # distill_loss = self.CrossEntropyDistill(feat, feat_list[i+1].detach(), 3.0)
 
                             loss += ins_loss + ce_loss + distill_loss
                             loss_log['ins'] += ins_loss

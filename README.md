@@ -1021,7 +1021,7 @@ total 10runs test acc results: tensor([52.8800, 54.3000, 54.1700, 53.9900, 53.72
 ----------- Avg_End_Acc (53.854000091552734, 0.3998354573128086) Avg_End_Fgt (13.295000190734862, 0.36043770972626754) Avg_Acc (63.47772226745362, 0.20505815453083331) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
 ```
 
-- ⭐️ ⭐️ ⭐️ SCD `python main.py --dataset cifar100 --buffer_size 5000 --lr 0.001 --gpu_id 2`
+- ⭐️ ⭐️ ⭐️ ⭐️ SCD `python main.py --dataset cifar100 --buffer_size 5000 --lr 0.001 --gpu_id 2`
 
         - 1-layer head: linear/proj
         - loss:
@@ -1052,7 +1052,7 @@ total 10runs test acc results: tensor([47.7300, 49.0100, 49.1300, 48.4300, 48.99
 ----------- Avg_End_Acc (48.57100006103516, 0.4167319432036087) Avg_End_Fgt (10.82299991607666, 0.33322027237336527) Avg_Acc (58.20664366093892, 0.3551912087428831) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
 ```
 
-- SCD `python main.py --dataset cifar100 --buffer_size 5000 --lr 0.001 --gpu_id 1`
+-  ⭐️ ⭐️ ⭐️ ⭐️ SCD `python main.py --dataset cifar100 --buffer_size 5000 --lr 0.001 --gpu_id 1`
 
         - 1-layer head: linear/proj
         - loss:
@@ -1061,6 +1061,12 @@ total 10runs test acc results: tensor([47.7300, 49.0100, 49.1300, 48.4300, 48.99
         - aug: flip*2 + hflip + color_gray + resize_crop
         - opt: Adam - lr 0.001 wd 0.0001
         - classifier: ncm mean dists from all layers
+
+```
+total 10runs test acc results: tensor([55.6800, 55.2600, 55.9700, 57.1200, 55.4700, 55.6500, 55.1100, 55.4500,
+        55.2100, 55.2800])
+----------- Avg_End_Acc (55.62000011444091, 0.4199605685442065) Avg_End_Fgt (13.68900001525879, 0.4700655032238019) Avg_Acc (64.83249045969947, 0.3186779408178127) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
 
 - SCD `python main.py --dataset cifar100 --buffer_size 5000 --lr 0.001 --gpu_id 2`
 
@@ -1071,6 +1077,12 @@ total 10runs test acc results: tensor([47.7300, 49.0100, 49.1300, 48.4300, 48.99
         - aug: flip*2 + hflip + color_gray + resize_crop
         - opt: Adam - lr 0.001 wd 0.0001
         - classifier: linear
+
+```
+total 10runs test acc results: tensor([53.1100, 54.2800, 53.2700, 54.8900, 52.6900, 54.2700, 53.9600, 51.6600,
+        54.0700, 54.4100])
+----------- Avg_End_Acc (53.66100025177002, 0.6946083697277136) Avg_End_Fgt (16.36400005340576, 0.7215947544643138) Avg_Acc (62.291879089855016, 0.47670626694708157) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
 
 - SCD `python main.py --dataset cifar100 --buffer_size 5000 --lr 0.001 --gpu_id 3`
 
@@ -1083,6 +1095,12 @@ total 10runs test acc results: tensor([47.7300, 49.0100, 49.1300, 48.4300, 48.99
         - opt: Adam - lr 0.001 wd 0.0001
         - classifier: ncm mean dists from all layers
 
+```
+total 10runs test acc results: tensor([55.6700, 55.4100, 56.3500, 56.2900, 55.6400, 55.4000, 55.3800, 55.4600,
+        54.8600, 55.2100])
+----------- Avg_End_Acc (55.567000007629396, 0.3267763078017201) Avg_End_Fgt (13.516999931335448, 0.4104849822936378) Avg_Acc (64.77618023503017, 0.2784573225994305) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
+
 - SCD `python main.py --dataset cifar100 --buffer_size 5000 --lr 0.001 --gpu_id 4`
 
         - 1-layer head: linear/proj
@@ -1094,3 +1112,40 @@ total 10runs test acc results: tensor([47.7300, 49.0100, 49.1300, 48.4300, 48.99
         - opt: Adam - lr 0.001 wd 0.0001
         - classifier: linear
 
+```
+total 10runs test acc results: tensor([52.1300, 53.5300, 54.8600, 54.0300, 54.4800, 54.7800, 53.3000, 53.8400,
+        53.3700, 54.3700])
+----------- Avg_End_Acc (53.8690001296997, 0.5925379456230465) Avg_End_Fgt (15.916000099182128, 0.6586657057230917) Avg_Acc (62.2575270670482, 0.5596166586451728) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
+
+- SCD `python main.py --dataset cifar100 --buffer_size 5000 --lr 0.001 --gpu_id 1`
+
+        - 1-layer head: linear/proj
+        - loss:
+                - ins_loss: sup_con_loss
+                - ce_loss: all | (new + 2 * cat)
+                - distill: feat 01 12 23 temp 3.0
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers
+
+- SCD `python main.py --dataset cifar100 --buffer_size 5000 --lr 0.001 --gpu_id 2`
+
+        - 1-layer head: linear/proj
+        - loss:
+                - ins_loss: sup_con_loss
+                - ce_loss: all | (new + 2 * cat) (intermediate after task 0)
+                - distill: feat 01 12 23 temp 3.0 
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers
+
+- SCD `python main.py --dataset cifar100 --buffer_size 5000 --lr 0.001 --gpu_id 3`
+
+        - 1-layer head: linear/proj
+        - loss:
+                - ins_loss: sup_con_loss
+                - ce_loss: all | (new + 2 * cat) (intermediate after task 0)
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers

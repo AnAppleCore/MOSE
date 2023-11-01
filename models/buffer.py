@@ -12,12 +12,14 @@ class Buffer(nn.Module):
         self.place_left = True
 
         if input_size is None:
-            input_size = args.input_size
+            self.input_size = args.input_size
+        else:
+            self.input_size = input_size
 
         buffer_size = args.buffer_size
         print('buffer has %d slots' % buffer_size)
 
-        bx = torch.FloatTensor(buffer_size, *input_size).fill_(0)
+        bx = torch.FloatTensor(buffer_size, *self.input_size).fill_(0)
         print("bx", bx.shape)
         by = torch.LongTensor(buffer_size).fill_(0)
         bt = torch.LongTensor(buffer_size).fill_(0)
@@ -256,7 +258,27 @@ class Buffer(nn.Module):
                 else:
                     return bx[indices], by[indices], logits[indices], bt[indices]
         else:
-            return 0
+            if task is not None:
+                valid_indices = (self.t == task)
+                valid_indices = valid_indices.nonzero().squeeze()
+                bx, by, bt = self.bx[valid_indices], self.by[valid_indices], self.bt[valid_indices]
+            else:
+                bx, by, bt= self.bx[:self.current_index], self.by[:self.current_index], self.bt[:self.current_index]
+
+            if bx.size(0) < amt:
+                if ret_ind:
+                    return bx, by, bt, torch.from_numpy(np.arange(bx.size(0)))
+                else:
+                    return bx, by, bt
+            else:
+                indices = torch.from_numpy(np.random.choice(bx.size(0), amt, replace=False))
+
+                indices = indices.cuda()
+
+                if ret_ind:
+                    return bx[indices], by[indices], bt[indices], indices
+                else:
+                    return bx[indices], by[indices], bt[indices]
         
     def print_per_task_num(self):
         _, counts = torch.unique(self.bt, return_counts=True)

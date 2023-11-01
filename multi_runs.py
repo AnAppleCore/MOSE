@@ -30,15 +30,15 @@ def multiple_run(args):
         # model = resnet18(class_num).cuda()
         model = resnet18_sd(class_num).cuda()
         # optimizer = Adam(model.parameters(), lr=args.lr, betas=(0.9, 0.99), weight_decay=1e-4)
-        optimizer = SGD(model.parameters(), lr=args.lr, weight_decay=0)
+        # optimizer = SGD(model.parameters(), lr=args.lr, weight_decay=0)
         # optimizer = SGD(model.parameters(), lr=args.lr, weight_decay=5e-4, momentum=0.9)
-        # optimizer = Adam(model.parameters(), lr=args.lr,  weight_decay=1e-4)
+        optimizer = Adam(model.parameters(), lr=args.lr,  weight_decay=1e-4)
         # agent = TrainLearner(model, buffer, optimizer, class_num, class_per_task, input_size, args)
         # agent = TrainLearner_SCR(model, buffer, optimizer, class_num, class_per_task, input_size, args)
         agent = TrainLearner_SCD(model, buffer, optimizer, class_num, class_per_task, input_size, args)
 
         for i in range(len(task_loader)):
-            print(f"-----------------------------run {run} task id:{i} start training-----------------------------")
+            print(f"\n-----------------------------run {run} task id:{i} start training-----------------------------")
 
             agent.train(i, task_loader[i]['train'])
             acc_list = agent.test(i, task_loader)

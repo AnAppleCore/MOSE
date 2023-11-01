@@ -163,3 +163,4 @@ cython_debug/
 **/.vscode
 **/__pycache__
 **/data/
+**/outputs/

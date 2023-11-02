@@ -1129,6 +1129,12 @@ total 10runs test acc results: tensor([52.1300, 53.5300, 54.8600, 54.0300, 54.48
         - opt: Adam - lr 0.001 wd 0.0001
         - classifier: ncm mean dists from all layers
 
+```
+total 10runs test acc results: tensor([55.1800, 55.4700, 56.5400, 56.5500, 55.3800, 55.5600, 55.8900, 55.0600,
+        54.3800, 56.1700])
+----------- Avg_End_Acc (55.617999992370606, 0.48956300730569297) Avg_End_Fgt (13.877999687194825, 0.3900690038475303) Avg_Acc (64.89781425766719, 0.3234205914848468) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
+
 - SCD `python main.py --dataset cifar100 --buffer_size 5000 --lr 0.001 --gpu_id 2`
 
         - 1-layer head: linear/proj
@@ -1149,3 +1155,9 @@ total 10runs test acc results: tensor([52.1300, 53.5300, 54.8600, 54.0300, 54.48
         - aug: flip*2 + hflip + color_gray + resize_crop
         - opt: Adam - lr 0.001 wd 0.0001
         - classifier: ncm mean dists from all layers
+
+```
+total 10runs test acc results: tensor([55.5600, 55.5200, 57.0400, 57.0800, 55.0700, 55.9000, 55.1000, 55.8200,
+        56.5000, 55.9200])
+----------- Avg_End_Acc (55.95099987030029, 0.5126274083326363) Avg_End_Fgt (13.536999855041504, 0.49346418857470714) Avg_Acc (65.07385949321021, 0.32638297976054875) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```

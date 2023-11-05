@@ -2,7 +2,7 @@ import torch.distributed as dist
 import numpy as np
 from scipy.stats import sem
 import scipy.stats as stats
-
+import os
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -23,6 +23,58 @@ class AverageMeter(object):
             return 0
         return float(self.sum) / self.count
 
+
+class Logger(object):
+    def __init__(self, args, base_dir='./outputs'):
+
+        self.args = args
+        if args.wandb_log == 'online':
+            import wandb
+            wandb.init(
+                project = args.wandb_project,
+                entity  = args.wandb_entity,
+                name    = args.run_name,
+                config  = args
+            )
+            self.wandb = wandb
+        else:
+            self.wandb = None
+
+    def log_scalars(self, values, step, verbose=False):
+        if self.wandb is None:
+            return
+        self.wandb.log(values, step)
+        if verbose:
+            print(values)
+
+    def log_losses(self, loss_log_holder):
+        if self.wandb is None:
+            return
+        for loss_log in loss_log_holder:
+            step = loss_log.pop('step')
+            self.log_scalars(loss_log, step, verbose=False)
+
+    def log_accs(self, acc_log):
+        if self.wandb is None:
+            return
+        step = acc_log.pop('step')
+        for k, v in acc_log.items():
+            for i in range(len(v)):
+                self.wandb.log({f"{k}/{i}": v[i]}, step)
+
+    def log_img(self, values, step):
+        if self.wandb is None:
+            return
+        for k, fig in values.items():
+            figure_path = os.path.join(self.path, f"{k.replace('/', '_')}_step{step}.png")
+            fig.savefig(figure_path)
+            fig.clear()
+            self.wandb.log({k:self.wandb.Image(figure_path)}, step)
+
+    def close(self):
+        if self.wandb is None:
+            return
+        self.wandb.finish()
 
 def all_reduce_tensor(tensor, op=dist.ReduceOp.SUM, world_size=1, norm=True):
     tensor = tensor.clone()

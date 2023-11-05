@@ -9,6 +9,14 @@ import torch.nn.functional as F
 from torch.nn.functional import relu
 from typing import List
 import math
+import numpy as np
+from torch.autograd import Variable
+
+
+def normalize(x:torch.Tensor) -> torch.Tensor:
+    x_norm = torch.norm(x, p=2, dim=1).unsqueeze(1).expand_as(x)
+    x_normalized = x.div(x_norm + 0.00001)
+    return x_normalized
 
 
 def conv3x3(in_planes: int, out_planes: int, stride: int = 1, groups: int = 1) -> F.conv2d:
@@ -147,11 +155,6 @@ class ResNetSD(nn.Module):
             self._make_attention_layer(nf * 4 * block.expansion),
         ])
 
-        self.adaption_layers = nn.ModuleList([
-            nn.Linear(nf * 8 * block.expansion, nf * 8 * block.expansion),
-            nn.Linear(nf * 8 * block.expansion, nf * 8 * block.expansion),
-            nn.Linear(nf * 8 * block.expansion, nf * 8 * block.expansion),
-        ])
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -271,6 +274,10 @@ class ResNetSD(nn.Module):
         for pp in list(self.parameters()):
             grads.append(pp.grad.view(-1))
         return torch.cat(grads)
+    
+    @property
+    def n_params(self):
+        return sum(np.prod(p.size()) for p in self.parameters())
 
 
 def resnet18_sd(nclasses: int, nf: int = 64) -> ResNetSD:

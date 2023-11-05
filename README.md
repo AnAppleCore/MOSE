@@ -1,7 +1,5 @@
-# OnPro
-Official implementation of ICCV 2023 paper "[Online Prototype Learning for Online Continual Learning](http://arxiv.org/abs/2308.00301)".
-
-ask the intermediate：improving online cl with multi-level supervision
+# MOSE
+Official implementation of [title](links.here)
 
 ## Usage
 ### Requirements
@@ -28,16 +26,22 @@ python main.py --dataset cifar100 --buffer_size 500 --mixup_p 0.2 --mixup_base_r
 python main.py --dataset tiny_imagenet --buffer_size 1000 --mixup_p 0.2 --mixup_base_rate 0.9 --gpu_id 0
 ```
 
+## Acknowledgement
+
+Thanks for the following code bases:
+- [OnPro](https://github.com/weilllllls/OnPro)
+
 ## Citation
 If you found this code or our work useful, please cite us:
 
 ```bibtex
-@inproceedings{onpro,
+OURS_HERE
+<!-- @inproceedings{onpro,
   title={Online Prototype Learning for Online Continual Learning},
   author={Wei, Yujie and Ye, Jiaxin and Huang, Zhizhong and Zhang, Junping and Shan, Hongming},
   booktitle={ICCV},
   year={2023}
-}
+} -->
 ```
 
 ## Temporary Experiment Log Baseline Version

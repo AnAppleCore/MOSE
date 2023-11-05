@@ -20,25 +20,26 @@ def bool2string(s):
 
 def get_params():
     parser = argparse.ArgumentParser()
+    # experiment related
     parser.add_argument('--seed', type=int, default=0, help='(default=%(default)d)')
-    parser.add_argument('--lr', default=0.0005, type=float, help='(default=%(default)f)')
+    parser.add_argument('--lr', default=0.001, type=float, help='(default=%(default)f)')
     parser.add_argument('--dataset', type=str, default='cifar10', help='(default=%(default)s)')
     parser.add_argument('--buffer_size', type=int, default=200, help='(default=%(default)s)')
     parser.add_argument('--buffer_batch_size', type=int, default=64, help='(default=%(default)s)')
     parser.add_argument('--run_nums', type=int, default=10, help='(default=%(default)s)')
     parser.add_argument('--batch_size', type=int, default=10, help='(default=%(default)s)')
-    parser.add_argument('--proto_t', type=float, default=0.5, help='(default=%(default)s)')
+    parser.add_argument('--epoch', type=int, default=1, help='(default=%(default)s)')
     parser.add_argument('--ins_t', type=float, default=0.07, help='(default=%(default)s)')
+    parser.add_argument('--dist_t', type=float, default=3.0, help='(default=%(default)s)')
 
-    parser.add_argument('--mixup_base_rate', type=float, default=0.75, help='(default=%(default)s)')
-    parser.add_argument('--mixup_alpha', type=float, default=0.4, help='(default=%(default)s)')
-    parser.add_argument('--mixup_p', type=float, default=0.6, help='(default=%(default)s)')
-    parser.add_argument('--mixup_lower', type=float, default=0, help='(default=%(default)s)')
-    parser.add_argument('--mixup_upper', type=float, default=0.6, help='(default=%(default)s)')
-
-    parser.add_argument('--oop', type=int, default=16, help='(default=%(default)s)')
     parser.add_argument('--gpu_id', type=int, default=0, help='(default=%(default)s)')
     parser.add_argument('--n_workers', type=int, default=8, help='(default=%(default)s)')
+
+    ## Logging 
+    parser.add_argument('--exp_name', type=str, default='tmp')
+    parser.add_argument('--wandb_project', type=str, default='ocl')
+    parser.add_argument('--wandb_entity', type=str)
+    parser.add_argument('--wandb_log', type=str, default='off', choices=['off', 'online'])
     args = parser.parse_args()
     return args
 

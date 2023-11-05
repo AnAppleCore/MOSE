@@ -68,6 +68,20 @@ class Buffer(nn.Module):
     def valid(self):
         return self.is_valid[:self.current_index]
     
+    @property
+    def n_bits(self):
+        total = 0
+        if self.args.buffer_size == 0:
+            return total
+        for name, buf in self.named_buffers():
+            if buf.dtype == torch.float32:
+                bits_per_item = 8 if name == 'bx' else 32
+            elif buf.dtype == torch.int64:
+                bits_per_item = buf.max().float().log2().clamp_(min=1).int().item()
+
+            total += bits_per_item * buf.numel()
+        return total
+    
     def __len__(self):
         return self.current_index
 

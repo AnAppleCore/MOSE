@@ -1139,7 +1139,7 @@ total 10runs test acc results: tensor([55.1800, 55.4700, 56.5400, 56.5500, 55.38
 ----------- Avg_End_Acc (55.617999992370606, 0.48956300730569297) Avg_End_Fgt (13.877999687194825, 0.3900690038475303) Avg_Acc (64.89781425766719, 0.3234205914848468) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
 ```
 
-- SCD `python main.py --dataset cifar100 --buffer_size 5000 --lr 0.001 --gpu_id 2`
+- ⭐️ ⭐️ ⭐️ ⭐️ ⭐️ SCD `python main.py --dataset cifar100 --buffer_size 5000 --lr 0.001 --gpu_id 2`
 
         - 1-layer head: linear/proj
         - loss:
@@ -1149,6 +1149,13 @@ total 10runs test acc results: tensor([55.1800, 55.4700, 56.5400, 56.5500, 55.38
         - aug: flip*2 + hflip + color_gray + resize_crop
         - opt: Adam - lr 0.001 wd 0.0001
         - classifier: ncm mean dists from all layers
+
+```
+total 10runs test acc results: tensor([55.5100, 55.6300, 55.6900, 57.2000, 56.0400, 54.9300, 56.4700, 56.2300,
+        56.1100, 56.5900])
+----------- Avg_End_Acc (56.04000011444092, 0.45728159770599586) Avg_End_Fgt (13.606999778747559, 0.5121010860052877) Avg_Acc (65.16169435059078, 0.269952354
+3152424) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
 
 - SCD `python main.py --dataset cifar100 --buffer_size 5000 --lr 0.001 --gpu_id 3`
 
@@ -1164,4 +1171,193 @@ total 10runs test acc results: tensor([55.1800, 55.4700, 56.5400, 56.5500, 55.38
 total 10runs test acc results: tensor([55.5600, 55.5200, 57.0400, 57.0800, 55.0700, 55.9000, 55.1000, 55.8200,
         56.5000, 55.9200])
 ----------- Avg_End_Acc (55.95099987030029, 0.5126274083326363) Avg_End_Fgt (13.536999855041504, 0.49346418857470714) Avg_Acc (65.07385949321021, 0.32638297976054875) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
+
+- MOSE
+
+        - 1-layer head: linear/proj
+        - loss:
+                - ins_loss: sup_con_loss
+                - ce_loss: all | (new + 2 * cat) (new 4; old 1234)
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers
+
+```
+total 15runs test acc results: tensor([55.5100, 55.9400, 55.8800, 56.9300, 54.7600, 55.2900, 55.9300, 55.8300,
+        55.4800, 56.1700, 55.5700, 54.7100, 55.5100, 54.2400, 55.7000])
+----------- Avg_End_Acc (55.56333333333334, 0.35993773706932297) Avg_End_Fgt (13.748000310262046, 0.3239243730890663) Avg_Acc (64.63540877082865, 0.30427974422374693) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
+
+- MOSE
+
+        - 1-layer head: linear/proj
+        - loss:
+                - ins_loss: sup_con_loss
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers
+
+```
+total 15runs test acc results: tensor([49.6000, 49.4400, 50.5900, 50.2600, 50.3100, 49.5400, 50.1200, 50.3600,
+        49.7100, 50.3000, 50.3700, 50.5600, 50.4900, 47.6000, 49.9500])
+----------- Avg_End_Acc (49.94666664123535, 0.4166665357416873) Avg_End_Fgt (16.600000025431314, 0.43762251113947165) Avg_Acc (59.20339942360934, 0.2701477691879333) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
+
+- MOSE
+
+        - 1-layer head: linear/proj
+        - loss:
+                - ins_loss: sup_con_loss
+                - ce_loss: all | cat
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers
+
+```
+total 15runs test acc results: tensor([54.7100, 55.6300, 54.3900, 55.6900, 54.9100, 54.0000, 55.2000, 54.3700,
+        54.9600, 55.7000, 54.7600, 53.5900, 54.8600, 53.9700, 54.7300])
+----------- Avg_End_Acc (54.764666570027664, 0.35130926188841116) Avg_End_Fgt (13.972000071207681, 0.4356269021967838) Avg_Acc (63.40043809871573, 0.22987271719811406) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
+
+- MOSE: gpu_id 1
+
+        - 1-layer head: linear/proj
+        - loss:
+                - ins_loss: sup_con_loss
+                - ce_loss: all | (new + 2 * cat)
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers
+
+```
+total 15runs test acc results: tensor([55.5600, 55.7400, 55.5900, 56.8900, 55.6100, 55.4500, 55.9400, 55.8800,
+        56.1100, 55.6200, 55.8100, 55.1300, 55.6300, 54.5100, 55.6900])
+----------- Avg_End_Acc (55.67733327229817, 0.2782675493355559) Avg_End_Fgt (13.685333150227867, 0.3202020282925808) Avg_Acc (64.79665229289748, 0.21642689349337801) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
+
+- MOSE
+
+        - Try coslinear + contrastive classifier/learning
+                - ✔️use coslinear to inference
+                - ✔️treat weight params in coslinear as class prototype
+                - ✔️update weight params using contrastive loss
+
+- MOSE: gpu_id 2
+
+        - 1-layer head: linear/proj
+        - loss:
+                - ins_loss: sup_con_loss
+                - ce_loss: pcr 0.09 | all
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers
+
+```
+total 15runs test acc results: tensor([53.3600, 53.1800, 52.7300, 52.0100, 52.3800, 52.5000, 52.6000, 53.5300,
+        54.3100, 53.0500, 52.7800, 54.0800, 53.4500, 51.7400, 54.8700])
+----------- Avg_End_Acc (53.10466649373372, 0.4760674719535754) Avg_End_Fgt (17.286666844685875, 0.3906511559380896) Avg_Acc (62.20197193989426, 0.31774676000286234) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
+
+
+- MOSE: gpu_id 3
+
+        - 1-layer head: linear/proj
+        - loss:
+                - ins_loss: sup_con_loss
+                - ce_loss: pcr 0.09 | all
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: cos mean from all layers
+
+```
+total 15runs test acc results: tensor([51.5000, 52.1400, 51.4600, 50.7500, 50.6700, 50.2800, 50.3900, 52.7700,
+        52.7000, 50.4600, 51.3000, 53.0400, 52.0900, 47.5400, 50.7400])
+----------- Avg_End_Acc (51.18866673787435, 0.7558745019260158) Avg_End_Fgt (10.517333246866862, 0.7500169941318452) Avg_Acc (56.81544407154265, 0.8146156474423175) Avg_Bwtp (0.17318517614293982, 0.3139865224520563) Avg_Fwt (0.0, 0.0)-----------
+```
+
+
+- MOSE: gpu_id 4
+
+        - 1-layer head: linear/proj
+        - loss:
+                - ins_loss: pcr 0.09
+                - ce_loss: all | (new + 2 * cat)
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers
+
+```
+total 15runs test acc results: tensor([56.2100, 56.7600, 56.0800, 56.1000, 56.5500, 56.5200, 56.1000, 55.3700,
+        56.7200, 55.0900, 56.5900, 56.5500, 56.1700, 55.3800, 57.6400])
+----------- Avg_End_Acc (56.25533332824707, 0.35459243033151694) Avg_End_Fgt (14.283333002726238, 0.40260274908760646) Avg_Acc (65.37299091246268, 0.17831744354581042) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
+
+
+- MOSE: gpu_id 5
+
+        - 1-layer head: linear/proj
+        - loss:
+                - ins_loss: pcr 0.09
+                - ce_loss: all | (new + 2 * cat)
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: cos mean dists from all layers
+
+```
+total 15runs test acc results: tensor([56.0100, 55.2400, 55.6800, 54.2600, 55.1000, 52.5600, 54.6000, 54.5700,
+        56.0700, 53.5600, 55.4600, 55.9400, 55.7000, 53.4300, 56.1400])
+----------- Avg_End_Acc (54.95466646830241, 0.6090440568411959) Avg_End_Fgt (13.387333577473958, 0.6292375526726998) Avg_Acc (62.95702313186, 0.3760876081925551) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
+
+
+- MOSE: gpu_id 3
+
+        - 1-layer head: linear/proj
+        - loss:
+                - ins_loss: pcr 0.07
+                - ce_loss: all | (new + 2 * cat)
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers
+
+```
+total 15runs test acc results: tensor([56.5200, 57.0600, 56.6600, 56.6200, 56.7600, 57.0200, 56.7700, 56.4800,
+        56.9400, 56.7700, 57.3900, 57.2800, 56.5000, 55.9000, 57.2700])
+----------- Avg_End_Acc (56.79600003560384, 0.21299043495712644) Avg_End_Fgt (13.614666468302406, 0.26748194157746125) Avg_Acc (65.65820141388626, 0.18400654069671157) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
+
+- MOSE: gpu_id 6
+
+        - 1-layer head: linear/proj
+        - loss:
+                - ins_loss: pcr 0.07
+                - ce_loss: all | (new + 2 * cat)
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: cos mean dists from all layers
+
+
+```
+total 15runs test acc results: tensor([56.1700, 56.2100, 56.2600, 53.4300, 56.1300, 55.5600, 55.1200, 55.4600,
+        55.9600, 54.8100, 55.9100, 55.6000, 55.8100, 55.2500, 56.3800])
+----------- Avg_End_Acc (55.60399996439615, 0.4185818082820852) Avg_End_Fgt (13.474666442871094, 0.5765364943217517) Avg_Acc (63.24715676525661, 0.388840940574229) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
+
+
+- MOSE: gpu_id 1
+
+        - 1-layer head: linear/proj
+        - loss:
+                - ins_loss: sup_con_loss
+                - ce_loss: all | (new + 2 * cat)
+                - distill: l2(feat, feat[-1]) * 0.03
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers
+
+```
+total 15runs test acc results: tensor([52.9500, 55.0100, 52.9300, 55.0300, 54.8000, 53.9700, 54.7400, 54.1000,
+        53.9900, 53.8500, 54.5800, 54.1400, 54.8700, 53.2500, 54.4200])
+----------- Avg_End_Acc (54.17533335367838, 0.38990568759676664) Avg_End_Fgt (10.069333445231118, 0.37107787418352495) Avg_Acc (59.26761356942111, 0.2769208700113786) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
 ```

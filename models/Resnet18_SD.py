@@ -104,6 +104,23 @@ class DownConv(nn.Module):
         return self.op(x)
 
 
+class distLinear(nn.Module):
+    def __init__(self, indim, outdim, temp=0.07, weight=None):
+        super(distLinear, self).__init__()
+        self.L = nn.Linear( indim, outdim, bias = False)
+        if weight is not None:
+            self.L.weight.data = Variable(weight)
+        self.temp = temp
+
+    def forward(self, x):
+        x_normalized = normalize(x)
+        L_normalized = normalize(self.L.weight)
+
+        cos_dist = torch.mm(x_normalized, L_normalized.transpose(0,1))
+        scores = cos_dist / self.temp
+        return scores
+
+
 class ResNetSD(nn.Module):
     """
     ResNet network architecture. Designed for complex datasets.

@@ -12,10 +12,13 @@ from utils.util import Logger, compute_performance
 
 def multiple_run(args):
     test_all_acc = torch.zeros(args.run_nums)
+    last_test_all_acc = torch.zeros(args.run_nums)
 
     accuracy_list = []
+    last_accuracy_list = []
     for run in range(args.run_nums):
         tmp_acc = []
+        last_tmp_acc = []
         print('=' * 100)
         print(f"-----------------------------run {run} start--------------------------")
         print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
@@ -41,9 +44,17 @@ def multiple_run(args):
             train_log_holder = agent.train(i, task_loader[i]['train'])
             acc_list, all_acc_list = agent.test(i, task_loader)
             tmp_acc.append(acc_list)
+            last_tmp_acc.append(all_acc_list['3'])
 
             logger.log_losses(train_log_holder)
             logger.log_accs(all_acc_list)
+
+            # record the intermediate final accs
+            for feat_id, acc_list_id in all_acc_list.items():
+                test_accuracy_id = acc_list_id[:i+1].mean()
+                logger.log_scalars({
+                    f"test/{feat_id}_avg_acc":       test_accuracy_id,
+                }, step=agent.total_step)
 
         test_accuracy = acc_list.mean()
         test_all_acc[run] = test_accuracy
@@ -61,11 +72,35 @@ def multiple_run(args):
             'metrics/model_n_params':       agent.model.n_params / 1e6
         }, step=agent.total_step+1, verbose=True)
 
+        # record the last scalars
+        last_acc_list = all_acc_list['3']
+        last_test_accuracy = last_acc_list.mean()
+        last_test_all_acc[run] = last_test_accuracy
+        last_tmp_acc = np.array(last_tmp_acc)
+        last_avg_fgt = (last_tmp_acc.max(0) - last_tmp_acc[-1, :]).mean()
+        last_avg_bwt = (last_tmp_acc[-1, :] - np.diagonal(last_tmp_acc)).mean()
+        last_accuracy_list.append(last_tmp_acc)
+
+        logger.log_scalars({
+            'test/last_final_avg_acc':       last_test_accuracy,
+            'test/last_final_avg_fgt':       last_avg_fgt,
+            'test/last_final_avg_bwt':       last_avg_bwt,
+        }, step=agent.total_step+1, verbose=True)
+
+
         print('=' * 100)
         print("{}th run's Test result: Accuracy: {:.2f}%".format(run, test_accuracy))
         print('=' * 100)
 
         logger.close()
+
+    last_accuracy_array = np.array(last_accuracy_list)
+    last_avg_end_acc, last_avg_end_fgt, last_avg_acc, last_avg_bwtp, last_avg_fwt = compute_performance(last_accuracy_array)
+    print('=' * 100)
+    print(f"total {args.run_nums}runs last test acc results: {last_test_all_acc}")
+    print('----------- Avg_End_Acc {} Avg_End_Fgt {} Avg_Acc {} Avg_Bwtp {} Avg_Fwt {}-----------'
+          .format(last_avg_end_acc, last_avg_end_fgt, last_avg_acc, last_avg_bwtp, last_avg_fwt))
+    print('=' * 100)
 
     accuracy_array = np.array(accuracy_list)
     avg_end_acc, avg_end_fgt, avg_acc, avg_bwtp, avg_fwt = compute_performance(accuracy_array)

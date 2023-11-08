@@ -1361,3 +1361,98 @@ total 15runs test acc results: tensor([52.9500, 55.0100, 52.9300, 55.0300, 54.80
         53.9900, 53.8500, 54.5800, 54.1400, 54.8700, 53.2500, 54.4200])
 ----------- Avg_End_Acc (54.17533335367838, 0.38990568759676664) Avg_End_Fgt (10.069333445231118, 0.37107787418352495) Avg_Acc (59.26761356942111, 0.2769208700113786) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
 ```
+
+- MOSE (standard moe)
+
+        - loss
+                - ins_loss: sup_con_loss
+                - ce_loss: all | (new + 2 * cat)
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers
+
+```
+total 15runs last test acc results: tensor([52.2900, 53.2300, 52.0700, 54.0500, 52.0200, 51.7700, 53.2300, 52.8400,
+        52.2900, 53.8800, 52.8500, 51.6200, 53.0600, 51.8800, 52.4300])
+----------- Avg_End_Acc (52.63399998982748, 0.41481276332207007) Avg_End_Fgt (15.576000213623049, 0.4781379533817934) Avg_Acc (62.3137304611206, 0.1672992317654766) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+====================================================================================================
+====================================================================================================
+total 15runs test acc results: tensor([55.6200, 56.5300, 55.1100, 56.9400, 54.9300, 55.2300, 56.0800, 56.2300,
+        55.4300, 56.8400, 55.4600, 54.8200, 55.9900, 54.9700, 55.6100])
+----------- Avg_End_Acc (55.719333419799796, 0.3814981298121493) Avg_End_Fgt (13.619999872843426, 0.4752069925365727) Avg_Acc (64.71884844818317, 0.17028026998997076) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
+
+- MOSE (skd)
+
+        - loss
+                - ins_loss: sup_con_loss
+                - ce_loss: all | (new + 2 * cat)
+                - distill_loss: l2(last_feat, feat) * 0.1 
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers
+
+```
+total 15runs last test acc results: tensor([54.6700, 54.7600, 54.7300, 55.3700, 53.7200, 53.8700, 54.8600, 54.3000,
+        53.8500, 55.0400, 54.1000, 54.1600, 53.9700, 54.0700, 54.0500])
+----------- Avg_End_Acc (54.36799997965495, 0.27601283232655616) Avg_End_Fgt (14.554667053222657, 0.40027919025557845) Avg_Acc (63.60347094687204, 0.17628067754157256) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+====================================================================================================
+====================================================================================================
+total 15runs test acc results: tensor([55.4600, 55.0600, 55.6200, 56.2400, 54.7600, 55.0400, 55.6800, 55.3000,
+        54.7900, 56.5100, 54.7700, 55.6200, 55.0900, 54.8400, 55.1800])
+----------- Avg_End_Acc (55.330666605631514, 0.2936419383352447) Avg_End_Fgt (12.75533332824707, 0.34878084970302586) Avg_Acc (64.30437852019858, 0.16047257768756426) Avg_Bwtp (0.0, 0.0) Avg_Fwt (0.0, 0.0)-----------
+```
+
+- MOSE (skd)
+
+        - loss
+                - ins_loss: sup_con_loss
+                - ce_loss: all | (new + 2 * cat)
+                - distill_loss: l2(last_feat_apt, feat) * 0.1 
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers
+
+
+- MOSE (skd)
+
+        - loss
+                - ins_loss: sup_con_loss
+                - ce_loss: all | (new + 2 * cat)
+                - distill_loss: norm_l2(last_feat, feat)
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers
+
+
+- MOSE (skd)
+
+        - loss
+                - ins_loss: sup_con_loss
+                - ce_loss: all | (new + 2 * cat)
+                - distill_loss: norm_l2(last_feat_apt, feat)
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers
+
+
+- MOSE (skd)
+
+        - loss
+                - ins_loss: sup_con_loss
+                - ce_loss: all | (new + 2 * cat)
+                - distill_loss: norm_l2(last_cm, cm)
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers
+
+
+- MOSE (skd)
+
+        - loss
+                - ins_loss: sup_con_loss
+                - ce_loss: all | (new + 2 * cat)
+                - distill_loss: norm_l2(last_cm_apt, cm)
+        - aug: flip*2 + hflip + color_gray + resize_crop
+        - opt: Adam - lr 0.001 wd 0.0001
+        - classifier: ncm mean dists from all layers

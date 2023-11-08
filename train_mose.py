@@ -145,7 +145,28 @@ class TrainLearner_MOSE(object):
         loss = loss_func(features_s, features_t)
 
         return loss
+
+    def feat_distill(self, features_s:torch.Tensor, features_t:torch.Tensor, labels:torch.Tensor):
+
+        unique_labels, label_counts = torch.unique(labels, return_counts=True)
+        batch_size, feat_dim = features_s.size()
+        class_means_s = torch.zeros(len(unique_labels), feat_dim).to(features_s.device).detach()
+        class_means_t = torch.zeros(len(unique_labels), feat_dim).to(features_s.device).detach()
+
+        features_s = F.normalize(features_s, dim=1)
+        features_t = F.normalize(features_t, dim=1)
+
+        for i, label in enumerate(unique_labels):
+            mask = (labels == label)
+            class_means_s[i] = torch.mean(features_s[mask], dim=0)
+            class_means_t[i] = torch.mean(features_t[mask], dim=0)
     
+        loss = torch.dist(class_means_s, class_means_t, p=2)
+
+        # loss_func = nn.MSELoss(reduction='mean')
+        # loss = loss_func(class_means_s, class_means_t)
+
+        return loss
 
 
     def train_any_task(self, task_id, train_loader):
@@ -226,6 +247,9 @@ class TrainLearner_MOSE(object):
                         proj_list = self.model.head(feat_list, use_proj=True)
                         pred_list = self.model.head(feat_list, use_proj=False)
 
+                        last_feat = feat_list[-1]
+                        last_feat = self.model.final_addaption_layer(last_feat)
+
                         for i in range(len(feat_list)):
                             feat = feat_list[i]
                             proj = proj_list[i]
@@ -251,15 +275,11 @@ class TrainLearner_MOSE(object):
 
                             distill_loss = 0.
                             if i != len(feat_list)-1:
-                                # distill_loss = self.smooth_l1(
-                                #     feat_list[-1], feat.detach()
-                                # ) * 10
-                                # distill_loss = torch.dist(
-                                #     feat_list[-1], feat.detach(), p=2
-                                # ) * 0.03
-                                distill_loss = self.mse_loss(
-                                    feat_list[-1], feat.detach()
-                                ) * 10
+                                distill_loss = torch.dist(
+                                    F.normalize(last_feat, dim=1), 
+                                    F.normalize(feat.detach(), dim=1), p=2
+                                )
+
 
                             loss += ins_loss + ce_loss + distill_loss
                             loss_log['train/ins'] += ins_loss
@@ -278,6 +298,9 @@ class TrainLearner_MOSE(object):
                         proj_list = self.model.head(feat_list, use_proj=True)
                         pred_list = self.model.head(feat_list, use_proj=False)
 
+                        last_feat = feat_list[-1]
+                        last_feat = self.model.final_addaption_layer(last_feat)
+
                         for i in range(len(feat_list)):
                             feat = feat_list[i]
                             proj = proj_list[i]
@@ -291,15 +314,11 @@ class TrainLearner_MOSE(object):
 
                             distill_loss = 0.
                             if i != len(feat_list)-1:
-                                # distill_loss = self.smooth_l1(
-                                #     feat_list[-1], feat.detach()
-                                # ) * 10
-                                # distill_loss = torch.dist(
-                                #     feat_list[-1], feat.detach(), p=2
-                                # ) * 0.03
-                                distill_loss = self.mse_loss(
-                                    feat_list[-1], feat.detach()
-                                ) * 10
+                                distill_loss = torch.dist(
+                                    F.normalize(last_feat, dim=1), 
+                                    F.normalize(feat.detach(), dim=1), p=2
+                                )
+                                
 
                             loss += ins_loss + ce_loss + distill_loss
                             loss_log['train/ins'] += ins_loss
@@ -495,7 +514,7 @@ class TrainLearner_MOSE(object):
         print('Test task {}: Accuracy: {}/{} ({:.2f}%)'.format(i, correct, num, test_accuracy))
         return test_accuracy
 
-    # linear(cos) classifier here
+    # linear/cos classifier here
     '''
     def test(self, i, task_loader, feat_ids=[0,1,2,3]):
         # linear classifier

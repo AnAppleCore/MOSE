@@ -96,7 +96,7 @@ def multiple_run(args):
 
     last_accuracy_array = np.array(last_accuracy_list)
     last_avg_end_acc, last_avg_end_fgt, last_avg_acc, last_avg_bwtp, last_avg_fwt = compute_performance(last_accuracy_array)
-    print('=' * 100)
+    print(f"\n{'=' * 100}")
     print(f"total {args.run_nums}runs last test acc results: {last_test_all_acc}")
     print('----------- Avg_End_Acc {} Avg_End_Fgt {} Avg_Acc {} Avg_Bwtp {} Avg_Fwt {}-----------'
           .format(last_avg_end_acc, last_avg_end_fgt, last_avg_acc, last_avg_bwtp, last_avg_fwt))
@@ -104,7 +104,7 @@ def multiple_run(args):
 
     accuracy_array = np.array(accuracy_list)
     avg_end_acc, avg_end_fgt, avg_acc, avg_bwtp, avg_fwt = compute_performance(accuracy_array)
-    print('=' * 100)
+    print(f"\n{'=' * 100}")
     print(f"total {args.run_nums}runs test acc results: {test_all_acc}")
     print('----------- Avg_End_Acc {} Avg_End_Fgt {} Avg_Acc {} Avg_Bwtp {} Avg_Fwt {}-----------'
           .format(avg_end_acc, avg_end_fgt, avg_acc, avg_bwtp, avg_fwt))

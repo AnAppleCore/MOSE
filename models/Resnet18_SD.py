@@ -171,6 +171,8 @@ class ResNetSD(nn.Module):
             self._make_attention_layer(nf * 2 * block.expansion),
             self._make_attention_layer(nf * 4 * block.expansion),
         ])
+        
+        self.final_addaption_layer = nn.Linear(nf * 8 * block.expansion, nf * 8 * block.expansion)
 
 
         for m in self.modules():

@@ -206,11 +206,11 @@ class Buffer(nn.Module):
 
             if bx.size(0) < amt:
                 if ret_ind:
-                    return bx, by, logits, bt, torch.from_numpy(np.arange(bx.size(0)))
+                    return bx, by, logits, bt, torch.from_numpy(np.arange(bx.size(0))).long()
                 else:
                     return bx, by, logits, bt
             else:
-                indices = torch.from_numpy(np.random.choice(bx.size(0), amt, replace=False))
+                indices = torch.from_numpy(np.random.choice(bx.size(0), amt, replace=False)).long()
 
                 indices = indices.cuda()
 
@@ -228,7 +228,7 @@ class Buffer(nn.Module):
 
             if bx.size(0) < amt:
                 if ret_ind:
-                    return bx, by, bt, torch.from_numpy(np.arange(bx.size(0)))
+                    return bx, by, bt, torch.from_numpy(np.arange(bx.size(0))).long()
                 else:
                     return bx, by, bt
             else:
@@ -259,11 +259,11 @@ class Buffer(nn.Module):
 
             if bx.size(0) < amt:
                 if ret_ind:
-                    return bx, by, logits, bt, torch.from_numpy(np.arange(bx.size(0)))
+                    return bx, by, logits, bt, torch.from_numpy(np.arange(bx.size(0))).long()
                 else:
                     return bx, by, logits, bt
             else:
-                indices = torch.from_numpy(np.random.choice(bx.size(0), amt, replace=False))
+                indices = torch.from_numpy(np.random.choice(bx.size(0), amt, replace=False)).long()
 
                 indices = indices.cuda()
 
@@ -281,11 +281,11 @@ class Buffer(nn.Module):
 
             if bx.size(0) < amt:
                 if ret_ind:
-                    return bx, by, bt, torch.from_numpy(np.arange(bx.size(0)))
+                    return bx, by, bt, torch.from_numpy(np.arange(bx.size(0))).long()
                 else:
                     return bx, by, bt
             else:
-                indices = torch.from_numpy(np.random.choice(bx.size(0), amt, replace=False))
+                indices = torch.from_numpy(np.random.choice(bx.size(0), amt, replace=False)).long()
 
                 indices = indices.cuda()
 

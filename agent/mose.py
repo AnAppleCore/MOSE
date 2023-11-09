@@ -42,7 +42,7 @@ class MOSE(object):
         self.class_holder = []
         self.scaler = GradScaler()
 
-    def train_any_task(self, task_id, train_loader):
+    def train_any_task(self, task_id, train_loader, epoch):
         num_d = 0
         new_class_holder = []
         epoch_log_holder = []
@@ -201,7 +201,8 @@ class MOSE(object):
                 self.scaler.update()
                 self.optimizer.zero_grad()
 
-            self.buffer.add_reservoir(x=x.detach(), y=y.detach(), logits=None, t=task_id)
+            if epoch == 0:
+                self.buffer.add_reservoir(x=x.detach(), y=y.detach(), logits=None, t=task_id)
 
             loss_log['train/loss'] = loss
             epoch_log_holder.append(loss_log)
@@ -216,7 +217,7 @@ class MOSE(object):
         self.model.train()
         train_log_holder = []
         for epoch in range(self.epoch):
-            epoch_log_holder = self.train_any_task(task_id, train_loader)
+            epoch_log_holder = self.train_any_task(task_id, train_loader, epoch)
             train_log_holder.extend(epoch_log_holder)
             # self.buffer.print_per_task_num()
         return train_log_holder

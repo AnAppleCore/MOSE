@@ -1,8 +1,10 @@
-import torch.distributed as dist
-import numpy as np
-from scipy.stats import sem
-import scipy.stats as stats
 import os
+
+import numpy as np
+import scipy.stats as stats
+import torch.distributed as dist
+from scipy.stats import sem
+
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -55,9 +57,9 @@ class Logger(object):
             self.log_scalars(loss_log, step, verbose=False)
 
     def log_accs(self, acc_log):
+        step = acc_log.pop('step')
         if self.wandb is None:
             return
-        step = acc_log.pop('step')
         for k, v in acc_log.items():
             for i in range(len(v)):
                 self.wandb.log({f"{k}/{i}": v[i]}, step)
@@ -75,6 +77,7 @@ class Logger(object):
         if self.wandb is None:
             return
         self.wandb.finish()
+
 
 def all_reduce_tensor(tensor, op=dist.ReduceOp.SUM, world_size=1, norm=True):
     tensor = tensor.clone()

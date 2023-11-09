@@ -1,18 +1,11 @@
 import os
+from functools import partial
+
 import numpy as np
 import torch
 from torchvision import datasets, transforms
+
 from experiment.tinyimagenet import MyTinyImagenet
-from torch.utils.data import TensorDataset
-
-
-def get_data(dataset_name, batch_size, n_workers):
-    if "cifar" in dataset_name:
-        return get_cifar_data(dataset_name, batch_size, n_workers)
-    elif dataset_name == "tiny_imagenet":
-        return get_tinyimagenet(batch_size, n_workers)
-    else:
-        raise Exception('unknown dataset!')
 
 
 def get_cifar_data(dataset_name, batch_size, n_workers):
@@ -183,3 +176,17 @@ def get_tinyimagenet(batch_size, n_workers):
 
     print("Data and loader is prepared")
     return data, class_num, class_per_task, Loader, size
+
+
+DATASETS = {
+    'cifar10':  partial(get_cifar_data, dataset_name='cifar10'),
+    'cifar100': partial(get_cifar_data, dataset_name='cifar100'),
+    'tiny_imagenet': get_tinyimagenet
+}
+
+
+def get_data(dataset_name, *args, **kwargs):
+    if dataset_name in DATASETS.keys():
+        return DATASETS[dataset_name](*args, **kwargs)
+    else:
+        raise Exception('unknown dataset!')

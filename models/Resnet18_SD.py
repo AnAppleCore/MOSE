@@ -3,14 +3,15 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
+import math
+from typing import List
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.functional import relu
-from typing import List
-import math
-import numpy as np
 from torch.autograd import Variable
+from torch.nn.functional import relu
 
 
 def normalize(x:torch.Tensor) -> torch.Tensor:
@@ -226,19 +227,16 @@ class ResNetSD(nn.Module):
         out = self.layer1(out)
         fea1 = self.attention_layers[0](out)
         fea1 = fea1 * out
-        # fea1 = out
         fea1 = self.feature_alignment_layer[0](fea1).view(out.size(0), -1)
 
         out = self.layer2(out)
         fea2 = self.attention_layers[1](out)
         fea2 = fea2 * out
-        # fea2 = out
         fea2 = self.feature_alignment_layer[1](fea2).view(out.size(0), -1)
 
         out = self.layer3(out)
         fea3 = self.attention_layers[2](out)
         fea3 = fea3 * out
-        # fea3 = out
         fea3 = self.feature_alignment_layer[2](fea3).view(out.size(0), -1)
 
         out = self.layer4(out)
@@ -306,5 +304,5 @@ def resnet18_sd(nclasses: int, nf: int = 64) -> ResNetSD:
     :param nf: number of filters
     :return: ResNet network
     """
-    return ResNetSD(BasicBlock, [2, 2, 2, 2], nclasses, nf=64)
+    return ResNetSD(BasicBlock, [2, 2, 2, 2], nclasses, nf)
 

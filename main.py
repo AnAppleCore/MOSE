@@ -1,45 +1,46 @@
 import argparse
+import os
 import random
+import warnings
+
 import numpy as np
 import torch
-import os
-import warnings
+
+from agent import METHODS
+from experiment.dataset import DATASETS
 from multi_runs import multiple_run
 
 os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 warnings.filterwarnings('ignore')
 
-def bool2string(s):
-    if s in {'True', 'true', 'T', 't'}:
-        return True
-    elif s in {'False', 'false', 'F', 'f'}:
-        return False
-    else:
-        raise ValueError('Not a valid boolean string')
-
 
 def get_params():
     parser = argparse.ArgumentParser()
     # experiment related
-    parser.add_argument('--seed', type=int, default=0, help='(default=%(default)d)')
-    parser.add_argument('--lr', default=0.001, type=float, help='(default=%(default)f)')
-    parser.add_argument('--dataset', type=str, default='cifar10', help='(default=%(default)s)')
-    parser.add_argument('--buffer_size', type=int, default=200, help='(default=%(default)s)')
-    parser.add_argument('--buffer_batch_size', type=int, default=64, help='(default=%(default)s)')
-    parser.add_argument('--run_nums', type=int, default=10, help='(default=%(default)s)')
-    parser.add_argument('--batch_size', type=int, default=10, help='(default=%(default)s)')
-    parser.add_argument('--epoch', type=int, default=1, help='(default=%(default)s)')
-    parser.add_argument('--ins_t', type=float, default=0.07, help='(default=%(default)s)')
-    parser.add_argument('--dist_t', type=float, default=3.0, help='(default=%(default)s)')
+    parser.add_argument('--dataset',            default='cifar10',  type=str, choices=DATASETS.keys())
+    parser.add_argument('--buffer_size',        default=200,        type=int)
+    parser.add_argument('--method',             default='mose',     type=str, choices=METHODS.keys())
 
-    parser.add_argument('--gpu_id', type=int, default=0, help='(default=%(default)s)')
-    parser.add_argument('--n_workers', type=int, default=8, help='(default=%(default)s)')
+    parser.add_argument('--seed',               default=0,          type=int)
+    parser.add_argument('--run_nums',           default=10,         type=int)
+    parser.add_argument('--epoch',              default=1,          type=int)
+    parser.add_argument('--lr',                 default=0.001,      type=float)
+    parser.add_argument('--batch_size',         default=10,         type=int)
+    parser.add_argument('--buffer_batch_size',  default=64,         type=int)
 
-    ## Logging 
-    parser.add_argument('--exp_name', type=str, default='tmp')
-    parser.add_argument('--wandb_project', type=str, default='ocl')
-    parser.add_argument('--wandb_entity', type=str)
-    parser.add_argument('--wandb_log', type=str, default='off', choices=['off', 'online'])
+    # mose control
+    parser.add_argument('--ins_t',              default=0.07,       type=float)
+    parser.add_argument('--classifier',         default='ncm',      type=str, choices=['linear', 'ncm'])
+    parser.add_argument('--augmentation',       default='ocm',      type=str, choices=['ocm', 'scr', 'none'])
+
+    parser.add_argument('--gpu_id',             default=0,          type=int)
+    parser.add_argument('--n_workers',          default=8,          type=int)
+
+    # logging 
+    parser.add_argument('--exp_name',           default='tmp',      type=str)
+    parser.add_argument('--wandb_project',      default='ocl',      type=str)
+    parser.add_argument('--wandb_entity',                           type=str)
+    parser.add_argument('--wandb_log',          default='off',      type=str, choices=['off', 'online'])
     args = parser.parse_args()
     return args
 

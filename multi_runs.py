@@ -3,10 +3,11 @@ import datetime
 import numpy as np
 import torch
 from torch.optim import Adam
+
+from agent import get_agent
 from experiment.dataset import get_data
+from models import get_model
 from models.buffer import Buffer
-from train_mose import TrainLearner_MOSE
-from models.Resnet18_SD import resnet18_sd
 from utils.util import Logger, compute_performance
 
 
@@ -23,17 +24,22 @@ def multiple_run(args):
         print(f"-----------------------------run {run} start--------------------------")
         print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         print('=' * 100)
-        data, class_num, class_per_task, task_loader, input_size = get_data(args.dataset, args.batch_size, args.n_workers)
+        data, class_num, class_per_task, task_loader, input_size = get_data(
+            dataset_name=args.dataset, batch_size=args.batch_size, n_workers=args.n_workers
+        )
         args.n_classes = class_num
-        buffer = Buffer(args, input_size).cuda()
 
         setattr(args, 'run_name', f"{args.exp_name} run_{run:02d}")
         print(f"\nRun {run}: {args.run_name} {'*' * 50}\n")
         logger = Logger(args)
-
-        model = resnet18_sd(class_num).cuda()
-        optimizer = Adam(model.parameters(), lr=args.lr,  weight_decay=1e-4)
-        agent = TrainLearner_MOSE(model, buffer, optimizer, class_num, class_per_task, input_size, args)
+        
+        buffer = Buffer(args, input_size).cuda()
+        model = get_model(method_name=args.method, nclasses=class_num).cuda()
+        optimizer = Adam(model.parameters(), args.lr, weight_decay=1e-4)
+        agent = get_agent(
+            method_name=args.method, model=model, 
+            buffer=buffer, optimizer=optimizer, input_size=input_size, args=args
+        )
 
         print(f"number of classifier parameters:\t {model.n_params/1e6:.2f}M", )
         print(f"buffer parameters (image size prod):\t {np.prod(buffer.bx.size())/1e6:.2f}M", )

@@ -1,10 +1,12 @@
-import torch.nn.functional as F
-from experiment.conf import base_path, ContinualDataset
-from PIL import Image
 import os
-from torch.utils.data import Dataset, DataLoader
+
 import numpy as np
+import torch.nn.functional as F
+from PIL import Image
+from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
+
+from experiment.conf import ContinualDataset, base_path
 
 
 class TinyImagenet(Dataset):
@@ -25,7 +27,8 @@ class TinyImagenet(Dataset):
             if os.path.isdir(root) and len(os.listdir(root)) > 0:
                 print('Download not needed, files already on disk.')
             else:
-                from google_drive_downloader import GoogleDriveDownloader as gdd
+                from google_drive_downloader import \
+                    GoogleDriveDownloader as gdd
 
                 # https://drive.google.com/file/d/1Sy3ScMBr0F4se8VZ6TAwDYF-nNGAAdxj/view
                 print('Downloading dataset')

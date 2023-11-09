@@ -1,12 +1,13 @@
 import random
-import torch
 from abc import abstractmethod
 from argparse import Namespace
-from torch import nn as nn
-from torchvision.transforms import transforms
-from torch.utils.data import DataLoader
 from typing import Tuple
+
 import numpy as np
+import torch
+from torch import nn as nn
+from torch.utils.data import DataLoader
+from torchvision.transforms import transforms
 
 
 def get_device() -> torch.device:

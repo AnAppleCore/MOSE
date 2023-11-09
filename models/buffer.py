@@ -86,8 +86,8 @@ class Buffer(nn.Module):
         return self.current_index
 
     def display(self, gen=None, epoch=-1):
-        from torchvision.utils import save_image
         from PIL import Image
+        from torchvision.utils import save_image
 
         if 'cifar' in self.args.dataset:
             shp = (-1, 3, 32, 32)

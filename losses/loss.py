@@ -1,7 +1,7 @@
-import numpy as np
+from typing import Optional
+
 import torch
 import torch.nn.functional as F
-from typing import Optional
 
 
 def moco_loss_func(

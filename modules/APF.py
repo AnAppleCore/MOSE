@@ -1,9 +1,10 @@
-import torch.nn as nn
+import itertools
+
+import numpy as np
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from kornia.augmentation import RandomMixUpV2
-import numpy as np
-import itertools
 
 
 class AdaptivePrototypicalFeedback(nn.Module):

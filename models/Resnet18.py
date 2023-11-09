@@ -3,12 +3,13 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
+from typing import List
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.functional import relu, avg_pool2d
-from typing import List
-import numpy as np
+from torch.nn.functional import avg_pool2d, relu
 
 
 def conv3x3(in_planes: int, out_planes: int, stride: int = 1) -> F.conv2d:
@@ -89,13 +90,6 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, nf * 8, num_blocks[3], stride=2)
         self.linear = nn.Linear(nf * 8 * block.expansion, num_classes)
         self.simclr = nn.Linear(nf * 8 * block.expansion, 128)
-        self._features = nn.Sequential(self.conv1,
-                                       self.bn1,
-                                       self.layer1,
-                                       self.layer2,
-                                       self.layer3,
-                                       self.layer4
-                                       )
         self.classifier = self.linear
 
     def _make_layer(self, block: BasicBlock, planes: int,
@@ -142,10 +136,8 @@ class ResNet(nn.Module):
         return out
 
     def features(self, x: torch.Tensor) -> torch.Tensor:
-        out = self._features(x)
-        out = avg_pool2d(out, out.shape[2])
-        feat = out.view(out.size(0), -1)
-        return feat
+        out = self.f_train(x)
+        return out
 
     def get_params(self) -> torch.Tensor:
         params = []
@@ -168,6 +160,10 @@ class ResNet(nn.Module):
             grads.append(pp.grad.view(-1))
         return torch.cat(grads)
 
+    @property
+    def n_params(self):
+        return sum(np.prod(p.size()) for p in self.parameters())
+
 
 def resnet18(nclasses: int, nf: int = 64) -> ResNet:
     """
@@ -176,7 +172,7 @@ def resnet18(nclasses: int, nf: int = 64) -> ResNet:
     :param nf: number of filters
     :return: ResNet network
     """
-    return ResNet(BasicBlock, [2, 2, 2, 2], nclasses, nf=64)
+    return ResNet(BasicBlock, [2, 2, 2, 2], nclasses, nf)
 
 
 def init_weights(model, std=0.01):

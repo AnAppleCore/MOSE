@@ -43,6 +43,10 @@ class Logger(object):
         else:
             self.wandb = None
 
+        if not os.path.isdir(base_dir):
+            os.mkdir(base_dir)
+            self.base_dir = base_dir
+
     def log_scalars(self, values, step, verbose=False):
         if self.wandb is None:
             return
@@ -72,10 +76,13 @@ class Logger(object):
         accs_table = pd.DataFrame(accs_list, columns=col_name, index=np.array(col_name))
         if verbose:
             print(accs_table)
-        
-        if self.wandb is None:
-            return
-        self.wandb.log({name: self.wandb.Table(dataframe=accs_table)}, step)
+
+        accs_table.to_csv(os.path.join(self.base_dir, 
+                                       f"{self.args.run_name}_{name}_.csv"))
+
+        # if self.wandb is None:
+        #     return
+        # self.wandb.log({name: self.wandb.Table(dataframe=accs_table)}, step)
 
     def log_img(self, values, step):
         if self.wandb is None:

@@ -27,7 +27,7 @@ class ER(object):
         elif "cifar100" in args.dataset:
             self.total_samples = 5000
         elif args.dataset == "tiny_imagenet":
-            self.total_samples = 10000
+            self.total_samples = 1000
         self.print_num = self.total_samples // 10
         
         self.transform = get_transform(args.augmentation, input_size)

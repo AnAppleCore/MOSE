@@ -1,4 +1,5 @@
 import os
+import pickle
 
 import numpy as np
 import pandas as pd
@@ -45,14 +46,28 @@ class Logger(object):
 
         if not os.path.isdir(base_dir):
             os.mkdir(base_dir)
-            self.base_dir = base_dir
+        self.base_dir = base_dir
+
+        self.folder_path = os.path.join(base_dir, args.run_name+f'_{np.random.randint(1000)}')
+        if not os.path.isdir(self.folder_path):
+            os.mkdir(self.folder_path)
+
+        # dump args
+        f = open(os.path.join(self.folder_path, "params.json"), "wt")
+        f.write(str(args) + "\n")
+        f.close()
+
+        self.to_pickle  = []
+        self.picklename = os.path.join(self.folder_path,  "db.pickle")
 
     def log_scalars(self, values, step, verbose=False):
+        for k,v in values.items():
+            self.to_pickle += [(k, v, step)]
+        if verbose:
+            print(values)
         if self.wandb is None:
             return
         self.wandb.log(values, step)
-        if verbose:
-            print(values)
 
     def log_losses(self, loss_log_holder):
         if self.wandb is None:
@@ -63,6 +78,8 @@ class Logger(object):
 
     def log_accs(self, acc_log):
         step = acc_log.pop('step')
+        for k, v in acc_log.items():
+            self.to_pickle += [(k, v, step)]
         if self.wandb is None:
             return
         for k, v in acc_log.items():
@@ -77,8 +94,7 @@ class Logger(object):
         if verbose:
             print(accs_table)
 
-        accs_table.to_csv(os.path.join(self.base_dir, 
-                                       f"{self.args.run_name}_{name}_.csv"))
+        accs_table.to_csv(os.path.join(self.folder_path, f"{name}.csv"))
 
         # if self.wandb is None:
         #     return
@@ -93,7 +109,14 @@ class Logger(object):
             fig.clear()
             self.wandb.log({k:self.wandb.Image(figure_path)}, step)
 
+    def dump(self):
+        f = open(self.picklename, "ab")
+        pickle.dump(self.to_pickle, f)
+        f.close()
+        self.to_pickle = []
+
     def close(self):
+        self.dump()
         if self.wandb is None:
             return
         self.wandb.finish()

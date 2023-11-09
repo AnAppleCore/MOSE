@@ -191,7 +191,7 @@ class ResNetSD(nn.Module):
             feature_layer.append(DownConv(in_planes, in_planes*2))
             in_planes = in_planes * 2
         assert in_planes == out_planes
-        feature_layer.append(nn.AvgPool2d(4, 4))
+        feature_layer.append(nn.AdaptiveAvgPool2d(1, 1))
         return nn.Sequential(*feature_layer)
     
     def _make_attention_layer(self, planes):

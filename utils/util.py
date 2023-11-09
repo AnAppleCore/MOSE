@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import pandas as pd
 import scipy.stats as stats
 import torch.distributed as dist
 from scipy.stats import sem
@@ -63,6 +64,18 @@ class Logger(object):
         for k, v in acc_log.items():
             for i in range(len(v)):
                 self.wandb.log({f"{k}/{i}": v[i]}, step)
+
+    def log_accs_table(self, name, accs_list, step, verbose=False):
+
+        num_tasks, _ = accs_list.shape
+        col_name = [f"task{i}" for i in range(num_tasks)]
+        accs_table = pd.DataFrame(accs_list, columns=col_name, index=np.array(col_name))
+        if verbose:
+            print(accs_table)
+        
+        if self.wandb is None:
+            return
+        self.wandb.log({name: self.wandb.Table(dataframe=accs_table)}, step)
 
     def log_img(self, values, step):
         if self.wandb is None:

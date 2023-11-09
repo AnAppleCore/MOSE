@@ -78,6 +78,11 @@ def multiple_run(args):
             'metrics/model_n_params':       agent.model.n_params / 1e6
         }, step=agent.total_step+1, verbose=True)
 
+        logger.log_accs_table(
+            name='task_accs_table', accs_list=tmp_acc,
+            step=agent.total_step+1, verbose=True
+        )
+
         # record the last scalars
         last_acc_list = all_acc_list['3']
         last_test_accuracy = last_acc_list.mean()
@@ -93,6 +98,10 @@ def multiple_run(args):
             'test/last_final_avg_bwt':       last_avg_bwt,
         }, step=agent.total_step+1, verbose=True)
 
+        logger.log_accs_table(
+            name='last_task_accs_table', accs_list=last_tmp_acc,
+            step=agent.total_step+1, verbose=True
+        )
 
         print('=' * 100)
         print("{}th run's Test result: Accuracy: {:.2f}%".format(run, test_accuracy))

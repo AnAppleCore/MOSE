@@ -29,9 +29,9 @@ def Rotation(x):
 
 
 def flip_inner(x, flip1, flip2):
-    bsz = x.size(0)
+    bsz, c, h, w = x.size()
     a = x
-    a = a.view(bsz, 3, 2, 16, 32)
+    a = a.view(bsz, c, 2, h//2, w)
     a = a.permute(2, 0, 1, 3, 4)
     s1 = a[0]
     s2 = a[1]
@@ -40,7 +40,7 @@ def flip_inner(x, flip1, flip2):
     if flip2:
         s2 = torch.flip(s2, (3,))
     s = torch.cat((s1.unsqueeze(2), s2.unsqueeze(2)), dim=2)
-    S = s.reshape(bsz, 3, 32, 32)
+    S = s.reshape(bsz, c, h, w)
     return S
 
 def RandomFlip(x, flip_num):

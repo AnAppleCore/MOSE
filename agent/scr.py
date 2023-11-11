@@ -60,7 +60,7 @@ class SCR(object):
 
                 with autocast():
                     x, y = x.cuda(non_blocking=True), y.cuda(non_blocking=True)
-                    x = x.requires_grad_()
+
                     buffer_batch_size = min(
                         self.buffer_batch_size, self.buffer_per_class * len(self.class_holder)
                     )
@@ -72,12 +72,14 @@ class SCR(object):
                     cat_x_aug = self.transform(cat_x)
                     all_x = torch.cat((cat_x, cat_x_aug))
                     all_y = torch.cat((cat_y, cat_y))
+                    all_x = all_x.detach()
+                    all_y = all_y.detach()
 
                     feat, proj = self.model(all_x, use_proj=True)
                     ins_loss = sup_con_loss(proj, self.ins_t, all_y)
 
                     loss += ins_loss
-                    loss_log['train/ins'] += ins_loss
+                    loss_log['train/ins'] += ins_loss.item()
 
                 self.scaler.scale(loss).backward()
                 self.scaler.step(self.optimizer)
@@ -87,7 +89,7 @@ class SCR(object):
             if epoch == 0:
                 self.buffer.add_reservoir(x=x.detach(), y=y.detach(), logits=None, t=task_id)
 
-            loss_log['train/loss'] = loss
+            loss_log['train/loss'] = loss.item() if loss != 0. else 0.
             epoch_log_holder.append(loss_log)
             self.total_step += 1
 
@@ -145,6 +147,9 @@ class SCR(object):
             all_acc_list['3'] = acc_list
             print(f"tasks acc:{acc_list}")
             print(f"tasks avg acc:{acc_list[:i+1].mean()}")
+
+        # clear the calculated class_means
+        self.class_means = None
 
         return acc_list, all_acc_list
 

@@ -24,14 +24,14 @@ class Buffer(nn.Module):
         by = torch.LongTensor(buffer_size).fill_(0)
         bt = torch.LongTensor(buffer_size).fill_(0)
 
-        logits = torch.FloatTensor(buffer_size, args.n_classes).fill_(0)
-        feature = torch.FloatTensor(buffer_size, 512).fill_(0)
+        # logits = torch.FloatTensor(buffer_size, args.n_classes).fill_(0)
+        # feature = torch.FloatTensor(buffer_size, 512).fill_(0)
 
         bx = bx.cuda()
         by = by.cuda()
         bt = bt.cuda()
-        logits = logits.cuda()
-        feature = feature.cuda()
+        # logits = logits.cuda()
+        # feature = feature.cuda()
         self.save_logits = None
 
         self.current_index = 0
@@ -42,8 +42,8 @@ class Buffer(nn.Module):
         self.register_buffer('bx', bx)
         self.register_buffer('by', by)
         self.register_buffer('bt', bt)
-        self.register_buffer('logits', logits)
-        self.register_buffer('feature', feature)
+        # self.register_buffer('logits', logits)
+        # self.register_buffer('feature', feature)
         self.to_one_hot = lambda x: x.new(x.size(0), args.n_classes).fill_(0).scatter_(1, x.unsqueeze(1), 1)
         self.arange_like = lambda x: torch.arange(x.size(0)).to(x.device)
         self.shuffle = lambda x: x[torch.randperm(x.size(0))]
@@ -118,8 +118,8 @@ class Buffer(nn.Module):
             self.by[self.current_index: self.current_index + offset].data.copy_(y[:offset])
             self.bt[self.current_index: self.current_index + offset].fill_(t)
 
-            if save_logits:
-                self.logits[self.current_index: self.current_index + offset].data.copy_(logits[:offset])
+            # if save_logits:
+            #     self.logits[self.current_index: self.current_index + offset].data.copy_(logits[:offset])
             self.current_index += offset
             self.n_seen_so_far += offset
 
@@ -155,8 +155,8 @@ class Buffer(nn.Module):
         self.by[idx_buffer] = y[idx_new_data].cuda()
         self.bt[idx_buffer] = t
 
-        if save_logits:
-            self.logits[idx_buffer] = logits[idx_new_data]
+        # if save_logits:
+        #     self.logits[idx_buffer] = logits[idx_new_data]
 
         return idx_buffer
 
@@ -195,29 +195,30 @@ class Buffer(nn.Module):
 
     def sample(self, amt, exclude_task=None, ret_ind=False):
         if self.save_logits:
-            if exclude_task is not None:
-                valid_indices = (self.t != exclude_task)
-                valid_indices = valid_indices.nonzero().squeeze()
-                bx, by, bt, logits = self.bx[valid_indices], self.by[valid_indices], self.bt[valid_indices], \
-                                     self.logits[valid_indices]
-            else:
-                bx, by, bt, logits = self.bx[:self.current_index], self.by[:self.current_index], \
-                    self.bt[:self.current_index], self.logits[:self.current_index]
+            pass
+            # if exclude_task is not None:
+            #     valid_indices = (self.t != exclude_task)
+            #     valid_indices = valid_indices.nonzero().squeeze()
+            #     bx, by, bt, logits = self.bx[valid_indices], self.by[valid_indices], self.bt[valid_indices], \
+            #                          self.logits[valid_indices]
+            # else:
+            #     bx, by, bt, logits = self.bx[:self.current_index], self.by[:self.current_index], \
+            #         self.bt[:self.current_index], self.logits[:self.current_index]
 
-            if bx.size(0) < amt:
-                if ret_ind:
-                    return bx, by, logits, bt, torch.from_numpy(np.arange(bx.size(0))).long()
-                else:
-                    return bx, by, logits, bt
-            else:
-                indices = torch.from_numpy(np.random.choice(bx.size(0), amt, replace=False)).long()
+            # if bx.size(0) < amt:
+            #     if ret_ind:
+            #         return bx, by, logits, bt, torch.from_numpy(np.arange(bx.size(0))).long()
+            #     else:
+            #         return bx, by, logits, bt
+            # else:
+            #     indices = torch.from_numpy(np.random.choice(bx.size(0), amt, replace=False)).long()
 
-                indices = indices.cuda()
+            #     indices = indices.cuda()
 
-                if ret_ind:
-                    return bx[indices], by[indices], logits[indices], bt[indices], indices
-                else:
-                    return bx[indices], by[indices], logits[indices], bt[indices]
+            #     if ret_ind:
+            #         return bx[indices], by[indices], logits[indices], bt[indices], indices
+            #     else:
+            #         return bx[indices], by[indices], logits[indices], bt[indices]
         else:
             if exclude_task is not None:
                 valid_indices = (self.t != exclude_task)
@@ -248,29 +249,30 @@ class Buffer(nn.Module):
     def onlysample(self, amt, task=None, ret_ind=False):
 
         if self.save_logits:
-            if task is not None:
-                valid_indices = (self.t == task)
-                valid_indices = valid_indices.nonzero().squeeze()
-                bx, by, bt, logits = self.bx[valid_indices], self.by[valid_indices], self.bt[valid_indices], \
-                                     self.logits[valid_indices]
-            else:
-                bx, by, bt, logits = self.bx[:self.current_index], self.by[:self.current_index], \
-                    self.bt[:self.current_index], self.logits[:self.current_index]
+            pass
+            # if task is not None:
+            #     valid_indices = (self.t == task)
+            #     valid_indices = valid_indices.nonzero().squeeze()
+            #     bx, by, bt, logits = self.bx[valid_indices], self.by[valid_indices], self.bt[valid_indices], \
+            #                          self.logits[valid_indices]
+            # else:
+            #     bx, by, bt, logits = self.bx[:self.current_index], self.by[:self.current_index], \
+            #         self.bt[:self.current_index], self.logits[:self.current_index]
 
-            if bx.size(0) < amt:
-                if ret_ind:
-                    return bx, by, logits, bt, torch.from_numpy(np.arange(bx.size(0))).long()
-                else:
-                    return bx, by, logits, bt
-            else:
-                indices = torch.from_numpy(np.random.choice(bx.size(0), amt, replace=False)).long()
+            # if bx.size(0) < amt:
+            #     if ret_ind:
+            #         return bx, by, logits, bt, torch.from_numpy(np.arange(bx.size(0))).long()
+            #     else:
+            #         return bx, by, logits, bt
+            # else:
+            #     indices = torch.from_numpy(np.random.choice(bx.size(0), amt, replace=False)).long()
 
-                indices = indices.cuda()
+            #     indices = indices.cuda()
 
-                if ret_ind:
-                    return bx[indices], by[indices], logits[indices], bt[indices], indices
-                else:
-                    return bx[indices], by[indices], logits[indices], bt[indices]
+            #     if ret_ind:
+            #         return bx[indices], by[indices], logits[indices], bt[indices], indices
+            #     else:
+            #         return bx[indices], by[indices], logits[indices], bt[indices]
         else:
             if task is not None:
                 valid_indices = (self.t == task)

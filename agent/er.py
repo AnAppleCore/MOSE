@@ -56,17 +56,19 @@ class ER(object):
 
             with autocast():
                 x, y = x.cuda(non_blocking=True), y.cuda(non_blocking=True)
-                x = x.requires_grad_()
+                x = x.detach()
+                y = y.detach()
 
                 if self.transform is not None:
                     x_aug = self.transform(x)
+                    x_aug = x_aug.detach()
                     pred = self.model(x_aug)
                 else:
                     pred = self.model(x)
 
                 ce_loss = F.cross_entropy(pred, y)
                 loss = ce_loss
-                loss_log['train/ce'] += ce_loss
+                loss_log['train/ce'] += ce_loss.item()
             
             self.scaler.scale(ce_loss).backward()
 
@@ -76,16 +78,19 @@ class ER(object):
                         self.buffer_batch_size, self.buffer_per_class * len(self.class_holder)
                     )
                     mem_x, mem_y, bt = self.buffer.sample(buffer_batch_size, exclude_task=None)
+                    mem_x = mem_x.detach()
+                    mem_y = mem_y.detach()
 
                     if self.transform is not None:
                         mem_x_aug = self.transform(mem_x)
+                        mem_x_aug = mem_x_aug.detach()
                         mem_pred = self.model(mem_x_aug)
                     else:
                         mem_pred = self.model(mem_x)
 
                     mem_ce_loss = F.cross_entropy(mem_pred, mem_y)
                     loss += mem_ce_loss
-                    loss_log['train/ce'] += mem_ce_loss
+                    loss_log['train/ce'] += mem_ce_loss.item()
 
                 self.scaler.scale(mem_ce_loss).backward()
 
@@ -96,7 +101,7 @@ class ER(object):
             if epoch == 0:
                 self.buffer.add_reservoir(x=x.detach(), y=y.detach(), logits=None, t=task_id)
 
-            loss_log['train/loss'] = loss
+            loss_log['train/loss'] = loss.item()
             epoch_log_holder.append(loss_log)
             self.total_step += 1
 

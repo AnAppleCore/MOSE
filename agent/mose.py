@@ -70,19 +70,14 @@ class MOSE(object):
                     x, y = x.cuda(non_blocking=True), y.cuda(non_blocking=True)
 
                     # sample enough new class samples
+                    new_x = x.detach()
+                    new_y = y.detach()
                     if batch_idx != 0:
                         buffer_cur_task = self.buffer_batch_size if task_id==0 else self.buffer_cur_task
                         cur_x, cur_y, _ = self.buffer.onlysample(buffer_cur_task, task=task_id)
                         if len(cur_x.shape) > 3:
                             new_x = torch.cat((x.detach(), cur_x))
                             new_y = torch.cat((y.detach(), cur_y))
-                        else:
-                            new_x = x.detach()
-                            new_y = y.detach()
-                    else:
-                        new_x = x.detach()
-                        new_y = y.detach()
-                    new_x.requires_grad_()
 
                     if task_id > 0:
                         # balanced sampling for an ideal overall distribution
@@ -97,7 +92,6 @@ class MOSE(object):
                         mem_x, mem_y, bt = self.buffer.sample(buffer_batch_size, exclude_task=task_id)
                         cat_x = torch.cat((x[:new_batch_size].detach(), mem_x))
                         cat_y = torch.cat((y[:new_batch_size].detach(), mem_y))
-                        cat_x.requires_grad_()
 
                         # rotate and augment
                         new_x = RandomFlip(new_x, 2)
@@ -115,6 +109,8 @@ class MOSE(object):
 
                         all_x = torch.cat((new_x, cat_x))
                         all_y = torch.cat((new_y, cat_y))
+                        all_x = all_x.detach()
+                        all_y = all_y.detach()
 
                         feat_list = self.model.features(all_x)
                         proj_list = self.model.head(feat_list, use_proj=True)
@@ -148,14 +144,14 @@ class MOSE(object):
                             distill_loss = 0.
                             if i != len(feat_list)-1:
                                 distill_loss = torch.dist(
-                                    F.normalize(last_feat, dim=1), 
-                                    F.normalize(feat.detach(), dim=1), p=2
+                                    F.normalize(last_feat[new_input_size:], dim=1), 
+                                    F.normalize(feat[new_input_size:].detach(), dim=1), p=2
                                 )
 
                             loss += ins_loss + ce_loss + distill_loss
-                            loss_log['train/ins'] += ins_loss
-                            loss_log['train/ce'] += ce_loss
-                            loss_log['train/distill'] += distill_loss
+                            loss_log['train/ins'] += ins_loss.item() if ins_loss != 0. else 0.
+                            loss_log['train/ce'] += ce_loss.item() if ce_loss != 0. else 0.
+                            loss_log['train/distill'] += distill_loss.item() if distill_loss != 0. else 0.
 
                     else:
                         # rotate and augment
@@ -164,6 +160,8 @@ class MOSE(object):
 
                         new_x = torch.cat((new_x, self.transform(new_x)))
                         new_y = torch.cat((new_y, new_y))
+                        new_x = new_x.detach()
+                        new_y = new_y.detach()
 
                         feat_list = self.model.features(new_x)
                         proj_list = self.model.head(feat_list, use_proj=True)
@@ -192,9 +190,9 @@ class MOSE(object):
                                 )
 
                             loss += ins_loss + ce_loss + distill_loss
-                            loss_log['train/ins'] += ins_loss
-                            loss_log['train/ce'] += ce_loss
-                            loss_log['train/distill'] += distill_loss
+                            loss_log['train/ins'] += ins_loss.item() if ins_loss != 0. else 0.
+                            loss_log['train/ce'] += ce_loss.item() if ce_loss != 0. else 0.
+                            loss_log['train/distill'] += distill_loss.item() if distill_loss != 0. else 0.
 
                 self.scaler.scale(loss).backward()
                 self.scaler.step(self.optimizer)
@@ -204,7 +202,7 @@ class MOSE(object):
             if epoch == 0:
                 self.buffer.add_reservoir(x=x.detach(), y=y.detach(), logits=None, t=task_id)
 
-            loss_log['train/loss'] = loss
+            loss_log['train/loss'] = loss.item() if loss != 0. else 0.
             epoch_log_holder.append(loss_log)
             self.total_step += 1
 
@@ -279,6 +277,9 @@ class MOSE(object):
             all_acc_list['mean'] = acc_list
             print(f"tasks acc:{acc_list}")
             print(f"tasks avg acc:{acc_list[:i+1].mean()}")
+
+        # clear the calculated class_means
+        self.class_means_ls = None
 
         return acc_list, all_acc_list
 

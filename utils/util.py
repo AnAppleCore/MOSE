@@ -96,9 +96,9 @@ class Logger(object):
 
         accs_table.to_csv(os.path.join(self.folder_path, f"{name}.csv"))
 
-        # if self.wandb is None:
-        #     return
-        # self.wandb.log({name: self.wandb.Table(dataframe=accs_table)}, step)
+        if self.wandb is None:
+            return
+        self.wandb.log({name: self.wandb.Table(dataframe=accs_table)}, step)
 
     def log_img(self, values, step):
         if self.wandb is None:

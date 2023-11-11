@@ -144,8 +144,8 @@ class MOSE(object):
                             distill_loss = 0.
                             if i != len(feat_list)-1:
                                 distill_loss = torch.dist(
-                                    F.normalize(last_feat[new_input_size:], dim=1), 
-                                    F.normalize(feat[new_input_size:].detach(), dim=1), p=2
+                                    F.normalize(last_feat, dim=1), 
+                                    F.normalize(feat.detach(), dim=1), p=2
                                 )
 
                             loss += ins_loss + ce_loss + distill_loss

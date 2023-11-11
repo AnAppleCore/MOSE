@@ -31,7 +31,7 @@ def multiple_run(args):
 
         setattr(args, 'run_name', f"{args.exp_name} run_{run:02d}")
         print(f"\nRun {run}: {args.run_name} {'*' * 50}\n")
-        logger = Logger(args)
+        logger = Logger(args, base_dir=f"./outputs/{args.method}/{args.dataset}")
         
         buffer = Buffer(args, input_size).cuda()
         model = get_model(method_name=args.method, nclasses=class_num).cuda()

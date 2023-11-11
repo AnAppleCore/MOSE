@@ -44,8 +44,8 @@ class Logger(object):
         else:
             self.wandb = None
 
-        if not os.path.isdir(base_dir):
-            os.mkdir(base_dir)
+        if not os.path.exists(base_dir):
+            os.makedirs(base_dir)
         self.base_dir = base_dir
 
         self.folder_path = os.path.join(base_dir, args.run_name+f'_{np.random.randint(1000)}')

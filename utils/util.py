@@ -1,4 +1,5 @@
 import os
+import json
 import pickle
 
 import numpy as np
@@ -53,9 +54,8 @@ class Logger(object):
             os.mkdir(self.folder_path)
 
         # dump args
-        f = open(os.path.join(self.folder_path, "params.json"), "wt")
-        f.write(str(args) + "\n")
-        f.close()
+        with open(os.path.join(self.folder_path, "params.json"), "wt") as f:
+            json.dump(vars(args), f)
 
         self.to_pickle  = []
         self.picklename = os.path.join(self.folder_path,  "db.pickle")

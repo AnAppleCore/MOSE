@@ -35,7 +35,7 @@ def multiple_run(args):
         
         buffer = Buffer(args, input_size).cuda()
         model = get_model(method_name=args.method, nclasses=class_num).cuda()
-        optimizer = Adam(model.parameters(), args.lr, weight_decay=1e-4)
+        optimizer = Adam(model.parameters(), args.lr, weight_decay=args.wd)
         agent = get_agent(
             method_name=args.method, model=model, 
             buffer=buffer, optimizer=optimizer, input_size=input_size, args=args

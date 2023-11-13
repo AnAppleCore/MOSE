@@ -24,7 +24,8 @@ def get_params():
     parser.add_argument('--seed',               default=0,          type=int)
     parser.add_argument('--run_nums',           default=10,         type=int)
     parser.add_argument('--epoch',              default=1,          type=int)
-    parser.add_argument('--lr',                 default=0.001,      type=float)
+    parser.add_argument('--lr',                 default=1e-3,       type=float)
+    parser.add_argument('--wd',                 default=1e-4,       type=float)
     parser.add_argument('--batch_size',         default=10,         type=int)
     parser.add_argument('--buffer_batch_size',  default=64,         type=int)
 

@@ -44,8 +44,9 @@ class MOSE(object):
 
     def train_any_task(self, task_id, train_loader, epoch):
         num_d = 0
-        new_class_holder = []
         epoch_log_holder = []
+        if epoch == 0:
+            self.new_class_holder = []
         for batch_idx, (x, y) in enumerate(train_loader):
             num_d += x.shape[0]
 
@@ -53,7 +54,7 @@ class MOSE(object):
             for j in range(len(Y)):
                 if Y[j] not in self.class_holder:
                     self.class_holder.append(Y[j].detach().item())
-                    new_class_holder.append(Y[j].detach().item())
+                    self.new_class_holder.append(Y[j].detach().item())
 
             loss = 0.
             loss_log = {
@@ -81,7 +82,7 @@ class MOSE(object):
 
                     if task_id > 0:
                         # balanced sampling for an ideal overall distribution
-                        new_over_all = len(new_class_holder) / len(self.class_holder)
+                        new_over_all = len(self.new_class_holder) / len(self.class_holder)
                         new_batch_size = min(
                             int(self.buffer_batch_size * new_over_all), x.size(0)
                         )
@@ -135,9 +136,9 @@ class MOSE(object):
                             # balanced cross entropy loss
                             ce_loss  = 2 * F.cross_entropy(cat_pred, cat_y)
 
-                            new_pred = new_pred[:, new_class_holder]
+                            new_pred = new_pred[:, self.new_class_holder]
                             new_y_onehot = F.one_hot(new_y, self.n_classes_num)
-                            new_y_onehot = new_y_onehot[:, new_class_holder].float()
+                            new_y_onehot = new_y_onehot[:, self.new_class_holder].float()
                             ce_loss += F.cross_entropy(new_pred, new_y_onehot)
 
                             # feature distillation loss

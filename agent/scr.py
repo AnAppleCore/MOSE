@@ -148,8 +148,8 @@ class SCR(object):
             print(f"tasks acc:{acc_list}")
             print(f"tasks avg acc:{acc_list[:i+1].mean()}")
 
-        # clear the calculated class_means
-        self.class_means = None
+        # # clear the calculated class_means
+        # self.class_means = None
 
         return acc_list, all_acc_list
 
@@ -177,6 +177,66 @@ class SCR(object):
         test_accuracy = (100. * correct / num)
         print('Test task {}: Accuracy: {}/{} ({:.2f}%)'.format(i, correct, num, test_accuracy))
         return test_accuracy
+
+    def test_buffer(self, i, task_loader):
+        # buffer test accuracy of tasks j <= i @ task i
+        self.model.eval()
+        all_acc_list = {'step': self.total_step}
+        with torch.no_grad():
+            acc_list = np.zeros(len(task_loader))
+            for j in range(i + 1):
+                acc = self.test_buffer_task(j)
+                acc_list[j] = acc.item()
+
+            all_acc_list['3'] = acc_list
+            print(f"buffer tasks acc:{acc_list}")
+            print(f"bufeer tasks avg acc:{acc_list[:i+1].mean()}")
+
+        return acc_list, all_acc_list
+
+    def test_buffer_task(self, i):
+        # buffer test accuracy of tasks i
+        correct = torch.full([], 0).cuda()
+        num = torch.full([], 0).cuda()
+
+        x_i, y_i, _ = self.buffer.onlysample(self.buffer.current_index, task=i)
+
+        for x, y in zip(x_i, y_i):
+            x = x.unsqueeze(0).detach()
+            y = y.unsqueeze(0).detach()
+
+            features = self.model.features(x)
+            features = F.normalize(features, dim=1)
+            features = features.unsqueeze(2)
+            means = torch.stack([self.class_means[cls] for cls in self.class_holder])
+            means = torch.stack([means] * x.size(0))
+            means = means.transpose(1, 2)
+            features = features.expand_as(means)
+            dists = (features - means).pow(2).sum(1).squeeze(1)
+            pred = dists.min(1)[1]
+            pred = torch.Tensor(self.class_holder)[pred].to(x.device)
+
+            num += x.size()[0]
+            correct += pred.eq(y.data.view_as(pred)).sum()
+
+        test_accuracy = (100. * correct / num)
+        print('Buffer test task {}: Accuracy: {}/{} ({:.2f}%)'.format(i, correct, num, test_accuracy))
+        return test_accuracy
+
+    def test_train(self, i, task_loader):
+        # train accuracy of current task i
+        self.model.eval()
+        all_acc_list = {'step': self.total_step}
+        with torch.no_grad():
+            acc_list = np.zeros(len(task_loader))
+            acc = self.test_model(task_loader[i]['train'], i)
+            acc_list[i] = acc.item()
+
+            all_acc_list['3'] = acc_list
+            print(f"train tasks acc:{acc_list}")
+            print(f"train tasks avg acc:{acc_list[:i+1].mean()}")
+
+        return acc_list, all_acc_list
 
     def save_checkpoint(self, save_path = './outputs/final.pt'):
         print(f"Save checkpoint to: {save_path}")

@@ -11,7 +11,7 @@ from torch.cuda.amp import autocast as autocast
 from utils import get_transform
 
 
-class ER(object):
+class Joint(object):
     def __init__(self, model:nn.Module, buffer, optimizer, input_size, args):
         self.model = model
         self.optimizer = optimizer
@@ -71,29 +71,6 @@ class ER(object):
                 loss_log['train/ce'] += ce_loss.item()
             
             self.scaler.scale(ce_loss).backward()
-
-            if len(self.buffer) > 0:
-                with autocast():
-                    buffer_batch_size = min(
-                        self.buffer_batch_size, self.buffer_per_class * len(self.class_holder)
-                    )
-                    mem_x, mem_y, bt = self.buffer.sample(buffer_batch_size, exclude_task=None)
-                    mem_x = mem_x.detach()
-                    mem_y = mem_y.detach()
-
-                    if self.transform is not None:
-                        mem_x_aug = self.transform(mem_x)
-                        mem_x_aug = mem_x_aug.detach()
-                        mem_pred = self.model(mem_x_aug)
-                    else:
-                        mem_pred = self.model(mem_x)
-
-                    mem_ce_loss = F.cross_entropy(mem_pred, mem_y)
-                    loss += mem_ce_loss
-                    loss_log['train/ce'] += mem_ce_loss.item()
-
-                self.scaler.scale(mem_ce_loss).backward()
-
             self.scaler.step(self.optimizer)
             self.scaler.update()
             self.optimizer.zero_grad()
@@ -123,9 +100,9 @@ class ER(object):
         self.model.eval()
         all_acc_list = {'step': self.total_step}
         with torch.no_grad():
-            acc_list = np.zeros(len(task_loader))
+            acc_list = np.zeros(1)
             for j in range(i + 1):
-                acc = self.test_model(task_loader[j]['test'], j)
+                acc = self.test_model(task_loader['test'], j)
                 acc_list[j] = acc.item()
 
             all_acc_list['3'] = acc_list
@@ -156,7 +133,7 @@ class ER(object):
         self.model.eval()
         all_acc_list = {'step': self.total_step}
         with torch.no_grad():
-            acc_list = np.zeros(len(task_loader))
+            acc_list = np.zeros(1)
             for j in range(i + 1):
                 acc = self.test_buffer_task(j)
                 acc_list[j] = acc.item()
@@ -193,8 +170,8 @@ class ER(object):
         self.model.eval()
         all_acc_list = {'step': self.total_step}
         with torch.no_grad():
-            acc_list = np.zeros(len(task_loader))
-            acc = self.test_model(task_loader[i]['train'], i)
+            acc_list = np.zeros(1)
+            acc = self.test_model(task_loader['train'], i)
             acc_list[i] = acc.item()
 
             all_acc_list['3'] = acc_list

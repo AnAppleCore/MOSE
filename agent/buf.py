@@ -11,7 +11,7 @@ from torch.cuda.amp import autocast as autocast
 from utils import get_transform
 
 
-class ER(object):
+class Buf(object):
     def __init__(self, model:nn.Module, buffer, optimizer, input_size, args):
         self.model = model
         self.optimizer = optimizer
@@ -54,54 +54,32 @@ class ER(object):
                 'train/ce':       0.,
             }
 
-            with autocast():
-                x, y = x.cuda(non_blocking=True), y.cuda(non_blocking=True)
-                x = x.detach()
-                y = y.detach()
-
-                if self.transform is not None:
-                    x_aug = self.transform(x)
-                    x_aug = x_aug.detach()
-                    pred = self.model(x_aug)
-                else:
-                    pred = self.model(x)
-
-                ce_loss = F.cross_entropy(pred, y)
-                loss = ce_loss
-                loss_log['train/ce'] += ce_loss.item()
-            
-            self.scaler.scale(ce_loss).backward()
-
-            if len(self.buffer) > 0:
+            if len(self.buffer) > 0 and task_id==9:
                 with autocast():
-                    buffer_batch_size = min(
-                        self.buffer_batch_size, self.buffer_per_class * len(self.class_holder)
-                    )
-                    mem_x, mem_y, bt = self.buffer.sample(buffer_batch_size, exclude_task=None)
+                    mem_x, mem_y, bt = self.buffer.sample(self.buffer_batch_size, exclude_task=None)
                     mem_x = mem_x.detach()
                     mem_y = mem_y.detach()
 
                     if self.transform is not None:
-                        mem_x_aug = self.transform(mem_x)
-                        mem_x_aug = mem_x_aug.detach()
-                        mem_pred = self.model(mem_x_aug)
+                        x_aug = self.transform(mem_x)
+                        x_aug = x_aug.detach()
+                        pred = self.model(x_aug)
                     else:
-                        mem_pred = self.model(mem_x)
+                        pred = self.model(mem_x)
 
-                    mem_ce_loss = F.cross_entropy(mem_pred, mem_y)
-                    loss += mem_ce_loss
-                    loss_log['train/ce'] += mem_ce_loss.item()
-
-                self.scaler.scale(mem_ce_loss).backward()
-
-            self.scaler.step(self.optimizer)
-            self.scaler.update()
-            self.optimizer.zero_grad()
+                    ce_loss = F.cross_entropy(pred, mem_y)
+                    loss = ce_loss
+                    loss_log['train/ce'] += ce_loss.item()
+                
+                self.scaler.scale(ce_loss).backward()
+                self.scaler.step(self.optimizer)
+                self.scaler.update()
+                self.optimizer.zero_grad()
 
             if epoch == 0:
                 self.buffer.add_reservoir(x=x.detach(), y=y.detach(), logits=None, t=task_id)
 
-            loss_log['train/loss'] = loss.item()
+            loss_log['train/loss'] = loss.item() if loss != 0. else 0.
             epoch_log_holder.append(loss_log)
             self.total_step += 1
 
@@ -124,9 +102,10 @@ class ER(object):
         all_acc_list = {'step': self.total_step}
         with torch.no_grad():
             acc_list = np.zeros(len(task_loader))
-            for j in range(i + 1):
-                acc = self.test_model(task_loader[j]['test'], j)
-                acc_list[j] = acc.item()
+            if i == 9:
+                for j in range(i + 1):
+                    acc = self.test_model(task_loader[j]['test'], j)
+                    acc_list[j] = acc.item()
 
             all_acc_list['3'] = acc_list
             print(f"tasks acc:{acc_list}")
@@ -157,9 +136,10 @@ class ER(object):
         all_acc_list = {'step': self.total_step}
         with torch.no_grad():
             acc_list = np.zeros(len(task_loader))
-            for j in range(i + 1):
-                acc = self.test_buffer_task(j)
-                acc_list[j] = acc.item()
+            if i == 9:
+                for j in range(i + 1):
+                    acc = self.test_buffer_task(j)
+                    acc_list[j] = acc.item()
 
             all_acc_list['3'] = acc_list
             print(f"buffer tasks acc:{acc_list}")
@@ -194,8 +174,9 @@ class ER(object):
         all_acc_list = {'step': self.total_step}
         with torch.no_grad():
             acc_list = np.zeros(len(task_loader))
-            acc = self.test_model(task_loader[i]['train'], i)
-            acc_list[i] = acc.item()
+            if i == 9:
+                acc = self.test_model(task_loader[i]['train'], i)
+                acc_list[i] = acc.item()
 
             all_acc_list['3'] = acc_list
             print(f"train tasks acc:{acc_list}")

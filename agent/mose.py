@@ -279,8 +279,162 @@ class MOSE(object):
             print(f"tasks acc:{acc_list}")
             print(f"tasks avg acc:{acc_list[:i+1].mean()}")
 
-        # clear the calculated class_means
-        self.class_means_ls = None
+        # # clear the calculated class_means
+        # self.class_means_ls = None
+
+        return acc_list, all_acc_list
+
+    def test_buffer(self, i, task_loader, feat_ids=[0,1,2,3]):
+        self.model.eval()
+        all_acc_list = {'step': self.total_step}
+        # test classifier from each required layer
+        for feat_id in feat_ids:
+            print(f"{'*'*100}\nTest with the output of layer: {feat_id+1}\n")
+            with torch.no_grad():
+                acc_list = np.zeros(len(task_loader))
+                for j in range(i + 1):
+                    acc = self.test_buffer_task(j, feat_id=feat_id)
+                    acc_list[j] = acc.item()
+
+                all_acc_list[str(feat_id)] = acc_list
+                print(f"tasks acc:{acc_list}")
+                print(f"tasks avg acc:{acc_list[:i+1].mean()}")
+
+        # test mean classifier
+        print(f"{'*'*100}\nTest with the mean dists output of each layer:\n")
+        with torch.no_grad():
+            acc_list = np.zeros(len(task_loader))
+            for j in range(i + 1):
+                acc = self.test_buffer_task_mean(j)
+                acc_list[j] = acc.item()
+
+            all_acc_list['mean'] = acc_list
+            print(f"tasks acc:{acc_list}")
+            print(f"tasks avg acc:{acc_list[:i+1].mean()}")
+
+        return acc_list, all_acc_list
+
+    def test_buffer_task(self, i, feat_id):
+        # test specific layer's output
+        correct = torch.full([], 0).cuda()
+        num = torch.full([], 0).cuda()
+
+        x_i, y_i, _ = self.buffer.onlysample(self.buffer.current_index, task=i)
+
+        if self.use_ncm:
+            class_means = self.class_means_ls[feat_id]
+            for x, y in zip(x_i, y_i):
+                x = x.unsqueeze(0).detach()
+                y = y.unsqueeze(0).detach()
+
+                features = self.model.features(x)[feat_id]
+                features = F.normalize(features, dim=1)
+                features = features.unsqueeze(2)
+                means = torch.stack([class_means[cls] for cls in self.class_holder])
+                means = torch.stack([means] * x.size(0))
+                means = means.transpose(1, 2)
+                features = features.expand_as(means)
+                dists = (features - means).pow(2).sum(1).squeeze(1)
+                pred = dists.min(1)[1]
+                pred = torch.Tensor(self.class_holder)[pred].to(x.device)
+
+                num += x.size()[0]
+                correct += pred.eq(y.data.view_as(pred)).sum()
+
+        else:
+            for x, y in zip(x_i, y_i):
+                x = x.unsqueeze(0).detach()
+                y = y.unsqueeze(0).detach()
+
+                pred = self.model(x)[feat_id]
+                pred = pred.data.max(1, keepdim=True)[1]
+
+                num += x.size()[0]
+                correct += pred.eq(y.data.view_as(pred)).sum()
+
+        test_accuracy = (100. * correct / num)
+        print('Buffer test task {}: Accuracy: {}/{} ({:.2f}%)'.format(i, correct, num, test_accuracy))
+        return test_accuracy
+
+    def test_buffer_task_mean(self, i):
+        # test with mean dists for all layers
+        correct = torch.full([], 0).cuda()
+        num = torch.full([], 0).cuda()
+
+        x_i, y_i, _ = self.buffer.onlysample(self.buffer.current_index, task=i)
+
+        if self.use_ncm:
+            for x, y in zip(x_i, y_i):
+                x = x.unsqueeze(0).detach()
+                y = y.unsqueeze(0).detach()
+
+                features_ls = self.model.features(x)
+                dists_ls = []
+
+                for feat_id in range(4):
+                    class_means = self.class_means_ls[feat_id]
+                    features = features_ls[feat_id]
+                    features = F.normalize(features, dim=1)
+                    features = features.unsqueeze(2)
+                    means = torch.stack([class_means[cls] for cls in self.class_holder])
+                    means = torch.stack([means] * x.size(0))
+                    means = means.transpose(1, 2)
+                    features = features.expand_as(means)
+                    dists = (features - means).pow(2).sum(1).squeeze(1)
+                    dists_ls.append(dists)
+
+                dists_ls = torch.cat([dists.unsqueeze(1) for dists in dists_ls], dim=1)
+                dists = dists_ls.mean(dim=1).squeeze(1)
+                pred = dists.min(1)[1]
+                pred = torch.Tensor(self.class_holder)[pred].to(x.device)
+
+                num += x.size()[0]
+                correct += pred.eq(y.data.view_as(pred)).sum()
+
+        else:
+            for x, y in zip(x_i, y_i):
+                x = x.unsqueeze(0).detach()
+                y = y.unsqueeze(0).detach()
+
+                pred = self.model(x)
+                pred = torch.stack(pred, dim=1)
+                pred = pred.mean(dim=1).squeeze()
+                pred = pred.data.max(1, keepdim=True)[1]
+
+                num += x.size()[0]
+                correct += pred.eq(y.data.view_as(pred)).sum()
+
+        test_accuracy = (100. * correct / num)
+        print('Buffer test task {}: Accuracy: {}/{} ({:.2f}%)'.format(i, correct, num, test_accuracy))
+        return test_accuracy
+
+    def test_train(self, i, task_loader, feat_ids=[0,1,2,3]):
+        # train accuracy of current task i
+        self.model.eval()
+        all_acc_list = {'step': self.total_step}
+
+        # test classifier from each required layer
+        for feat_id in feat_ids:
+            print(f"{'*'*100}\nTest with the output of layer: {feat_id+1}\n")
+            with torch.no_grad():
+                acc_list = np.zeros(len(task_loader))
+                acc = self.test_model(task_loader[i]['train'], i, feat_id=feat_id)
+                acc_list[i] = acc.item()
+
+                all_acc_list[str(feat_id)] = acc_list
+                print(f"tasks acc:{acc_list}")
+                print(f"tasks avg acc:{acc_list[:i+1].mean()}")
+
+        # test mean classifier
+        print(f"{'*'*100}\nTest with the mean dists output of each layer:\n")
+        with torch.no_grad():
+            acc_list = np.zeros(len(task_loader))
+            acc = self.test_model_mean(task_loader[i]['train'], i)
+            acc_list[i] = acc.item()
+
+            all_acc_list['mean'] = acc_list
+            print(f"tasks acc:{acc_list}")
+            print(f"tasks avg acc:{acc_list[:i+1].mean()}")
 
         return acc_list, all_acc_list
 

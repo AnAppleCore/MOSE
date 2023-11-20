@@ -9,6 +9,7 @@ import torch
 from agent import METHODS
 from experiment.dataset import DATASETS
 from multi_runs import multiple_run
+from multi_runs_joint import multiple_run_joint
 
 os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 warnings.filterwarnings('ignore')
@@ -28,6 +29,8 @@ def get_params():
     parser.add_argument('--wd',                 default=1e-4,       type=float)
     parser.add_argument('--batch_size',         default=10,         type=int)
     parser.add_argument('--buffer_batch_size',  default=64,         type=int)
+
+    parser.add_argument('--continual',          default='on',       type=str, choices=['off', 'on'])
 
     # mose control
     parser.add_argument('--ins_t',              default=0.07,       type=float)
@@ -65,7 +68,10 @@ def main(args):
     else:
         print('[CUDA is unavailable]')
 
-    multiple_run(args)
+    if args.continual == 'on':
+        multiple_run(args)
+    else:
+        multiple_run_joint(args)
 
 
 if __name__ == '__main__':

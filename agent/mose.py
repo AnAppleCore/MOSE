@@ -20,6 +20,7 @@ class MOSE(object):
 
         self.ins_t = args.ins_t
         self.epoch = args.epoch
+        self.expert = int(args.expert)
         self.n_classes_num = args.n_classes
         self.use_ncm = (args.classifier == 'ncm')
 
@@ -117,8 +118,8 @@ class MOSE(object):
                         proj_list = self.model.head(feat_list, use_proj=True)
                         pred_list = self.model.head(feat_list, use_proj=False)
 
-                        last_feat = feat_list[-1]
-                        last_feat = self.model.final_addaption_layer(last_feat)
+                        stu_feat = feat_list[self.expert]
+                        stu_feat = self.model.final_addaption_layer(stu_feat)
 
                         for i in range(len(feat_list)):
                             feat = feat_list[i]
@@ -143,9 +144,9 @@ class MOSE(object):
 
                             # feature distillation loss
                             distill_loss = 0.
-                            if i != len(feat_list)-1:
+                            if i != self.expert:
                                 distill_loss = torch.dist(
-                                    F.normalize(last_feat, dim=1), 
+                                    F.normalize(stu_feat, dim=1), 
                                     F.normalize(feat.detach(), dim=1), p=2
                                 )
 
@@ -168,8 +169,8 @@ class MOSE(object):
                         proj_list = self.model.head(feat_list, use_proj=True)
                         pred_list = self.model.head(feat_list, use_proj=False)
 
-                        last_feat = feat_list[-1]
-                        last_feat = self.model.final_addaption_layer(last_feat)
+                        stu_feat = feat_list[self.expert]
+                        stu_feat = self.model.final_addaption_layer(stu_feat)
 
                         for i in range(len(feat_list)):
                             feat = feat_list[i]
@@ -184,9 +185,9 @@ class MOSE(object):
 
                             # feature distillation loss
                             distill_loss = 0.
-                            if i != len(feat_list)-1:
+                            if i != self.expert:
                                 distill_loss = torch.dist(
-                                    F.normalize(last_feat, dim=1), 
+                                    F.normalize(stu_feat, dim=1), 
                                     F.normalize(feat.detach(), dim=1), p=2
                                 )
 
@@ -398,7 +399,7 @@ class MOSE(object):
 
                 pred = self.model(x)
                 pred = torch.stack(pred, dim=1)
-                pred = pred.mean(dim=1).squeeze()
+                pred = pred.mean(dim=1).squeeze(1)
                 pred = pred.data.max(1, keepdim=True)[1]
 
                 num += x.size()[0]

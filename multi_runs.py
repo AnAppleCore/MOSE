@@ -62,13 +62,13 @@ def multiple_run(args):
             # train_acc_list, train_all_acc_list = agent.test_train(i, task_loader)
 
             tmp_acc.append(acc_list)
-            last_tmp_acc.append(all_acc_list['3'])
+            last_tmp_acc.append(all_acc_list[args.expert])
 
             buffer_tmp_acc.append(buffer_acc_list)
-            buffer_last_tmp_acc.append(buffer_all_acc_list['3'])
+            buffer_last_tmp_acc.append(buffer_all_acc_list[args.expert])
 
             # train_tmp_acc.append(train_acc_list)
-            # train_last_tmp_acc.append(train_all_acc_list['3'])
+            # train_last_tmp_acc.append(train_all_acc_list[args.expert])
 
 
             logger.log_losses(train_log_holder)
@@ -103,7 +103,7 @@ def multiple_run(args):
         )
 
         # record the last scalars
-        last_acc_list = all_acc_list['3']
+        last_acc_list = all_acc_list[args.expert]
         last_test_accuracy = last_acc_list.mean()
         last_test_all_acc[run] = last_test_accuracy
         last_tmp_acc = np.array(last_tmp_acc)

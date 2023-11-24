@@ -34,6 +34,7 @@ def get_params():
 
     # mose control
     parser.add_argument('--ins_t',              default=0.07,       type=float)
+    parser.add_argument('--expert',             default='3',        type=str, choices=['0','1','2','3'])
     parser.add_argument('--classifier',         default='ncm',      type=str, choices=['linear', 'ncm'])
     parser.add_argument('--augmentation',       default='ocm',      type=str, choices=['ocm', 'scr', 'none'])
 

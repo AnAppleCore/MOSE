@@ -295,6 +295,10 @@ class ResNetSD(nn.Module):
     @property
     def n_params(self):
         return sum(np.prod(p.size()) for p in self.parameters())
+    
+    def print_aux(self):
+        for l in self.feature_alignment_layer:
+            print(f"{l}: {sum(np.prod(p.size()) for p in l.parameters())}")
 
 
 def resnet18_sd(nclasses: int, nf: int = 64) -> ResNetSD:

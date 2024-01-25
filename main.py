@@ -36,7 +36,7 @@ def get_params():
     parser.add_argument('--ins_t',              default=0.07,       type=float)
     parser.add_argument('--expert',             default='3',        type=str, choices=['0','1','2','3'])
     parser.add_argument('--classifier',         default='ncm',      type=str, choices=['linear', 'ncm'])
-    parser.add_argument('--augmentation',       default='ocm',      type=str, choices=['ocm', 'scr', 'none'])
+    parser.add_argument('--augmentation',       default='ocm',      type=str, choices=['ocm', 'scr', 'none', 'simclr'])
 
     parser.add_argument('--gpu_id',             default=0,          type=int)
     parser.add_argument('--n_workers',          default=8,          type=int)

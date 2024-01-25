@@ -54,26 +54,52 @@ class ER(object):
                 'train/ce':       0.,
             }
 
+            # with autocast():
+            #     x, y = x.cuda(non_blocking=True), y.cuda(non_blocking=True)
+            #     x = x.detach()
+            #     y = y.detach()
+
+            #     if self.transform is not None:
+            #         x_aug = self.transform(x)
+            #         x_aug = x_aug.detach()
+            #         pred = self.model(x_aug)
+            #     else:
+            #         pred = self.model(x)
+
+            #     ce_loss = F.cross_entropy(pred, y)
+            #     loss = ce_loss
+            #     loss_log['train/ce'] += ce_loss.item()
+            
+            # self.scaler.scale(ce_loss).backward()
+
+            # if len(self.buffer) > 0:
+            #     with autocast():
+            #         buffer_batch_size = min(
+            #             self.buffer_batch_size, self.buffer_per_class * len(self.class_holder)
+            #         )
+            #         mem_x, mem_y, bt = self.buffer.sample(buffer_batch_size, exclude_task=None)
+            #         mem_x = mem_x.detach()
+            #         mem_y = mem_y.detach()
+
+            #         if self.transform is not None:
+            #             mem_x_aug = self.transform(mem_x)
+            #             mem_x_aug = mem_x_aug.detach()
+            #             mem_pred = self.model(mem_x_aug)
+            #         else:
+            #             mem_pred = self.model(mem_x)
+
+            #         mem_ce_loss = F.cross_entropy(mem_pred, mem_y)
+            #         loss += mem_ce_loss
+            #         loss_log['train/ce'] += mem_ce_loss.item()
+
+            #     self.scaler.scale(mem_ce_loss).backward()
+
             with autocast():
                 x, y = x.cuda(non_blocking=True), y.cuda(non_blocking=True)
                 x = x.detach()
                 y = y.detach()
 
-                if self.transform is not None:
-                    x_aug = self.transform(x)
-                    x_aug = x_aug.detach()
-                    pred = self.model(x_aug)
-                else:
-                    pred = self.model(x)
-
-                ce_loss = F.cross_entropy(pred, y)
-                loss = ce_loss
-                loss_log['train/ce'] += ce_loss.item()
-            
-            self.scaler.scale(ce_loss).backward()
-
-            if len(self.buffer) > 0:
-                with autocast():
+                if len(self.buffer) > 0:
                     buffer_batch_size = min(
                         self.buffer_batch_size, self.buffer_per_class * len(self.class_holder)
                     )
@@ -81,18 +107,25 @@ class ER(object):
                     mem_x = mem_x.detach()
                     mem_y = mem_y.detach()
 
-                    if self.transform is not None:
-                        mem_x_aug = self.transform(mem_x)
-                        mem_x_aug = mem_x_aug.detach()
-                        mem_pred = self.model(mem_x_aug)
-                    else:
-                        mem_pred = self.model(mem_x)
+                    all_x = torch.cat([x, mem_x], dim=0)
+                    all_y = torch.cat([y, mem_y], dim=0)
 
-                    mem_ce_loss = F.cross_entropy(mem_pred, mem_y)
-                    loss += mem_ce_loss
-                    loss_log['train/ce'] += mem_ce_loss.item()
+                else:
+                    all_x = x
+                    all_y = y
 
-                self.scaler.scale(mem_ce_loss).backward()
+                if self.transform is not None:
+                    all_x_aug = self.transform(all_x)
+                    all_x_aug = all_x_aug.detach()
+                    all_pred = self.model(all_x_aug)
+                else:
+                    all_pred = self.model(all_x)
+
+                all_ce_loss = F.cross_entropy(all_pred, all_y)
+                loss = all_ce_loss
+                loss_log['train/ce'] += all_ce_loss.item()
+
+            self.scaler.scale(all_ce_loss).backward()
 
             self.scaler.step(self.optimizer)
             self.scaler.update()

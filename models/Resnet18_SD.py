@@ -175,6 +175,8 @@ class ResNetSD(nn.Module):
         
         self.final_addaption_layer = nn.Linear(nf * 8 * block.expansion, nf * 8 * block.expansion)
 
+        self.moe_layer = nn.Linear(4 * nf * 8 * block.expansion, num_classes)
+
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -250,6 +252,11 @@ class ResNetSD(nn.Module):
         else:
             out_list = [self.linear[i](x[i]) for i in range(len(x))]
         return out_list
+    
+    def moe(self, x: List[torch.Tensor]):
+        cat_x = torch.cat(x, dim=1)
+        moe_out = self.moe_layer(cat_x)
+        return moe_out
     
     def forward(self, x: torch.Tensor, use_proj=False):
         feat_list = self.features(x)

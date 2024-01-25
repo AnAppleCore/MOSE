@@ -6,7 +6,8 @@ METHOD_2_MODEL = {
     'scr': resnet18, 
     'joint': resnet18,
     'buf': resnet18,
-    'mose': resnet18_sd
+    'mose': resnet18_sd,
+    'mose_moe': resnet18_sd
 }
 
 def get_model(method_name,  *args, **kwargs):

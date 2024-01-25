@@ -58,14 +58,14 @@ def multiple_run(args):
             acc_list, all_acc_list = agent.test(i, task_loader)
 
             # empirical analysis of overfitting-underfitting dilemma
-            buffer_acc_list, buffer_all_acc_list = agent.test_buffer(i, task_loader)
+            # buffer_acc_list, buffer_all_acc_list = agent.test_buffer(i, task_loader)
             # train_acc_list, train_all_acc_list = agent.test_train(i, task_loader)
 
             tmp_acc.append(acc_list)
             last_tmp_acc.append(all_acc_list[args.expert])
 
-            buffer_tmp_acc.append(buffer_acc_list)
-            buffer_last_tmp_acc.append(buffer_all_acc_list[args.expert])
+            # buffer_tmp_acc.append(buffer_acc_list)
+            # buffer_last_tmp_acc.append(buffer_all_acc_list[args.expert])
 
             # train_tmp_acc.append(train_acc_list)
             # train_last_tmp_acc.append(train_all_acc_list[args.expert])
@@ -123,20 +123,20 @@ def multiple_run(args):
         )
 
 
-        buffer_tmp_acc = np.array(buffer_tmp_acc)
-        buffer_last_tmp_acc = np.array(buffer_last_tmp_acc)
+        # buffer_tmp_acc = np.array(buffer_tmp_acc)
+        # buffer_last_tmp_acc = np.array(buffer_last_tmp_acc)
 
         # train_tmp_acc = np.array(train_tmp_acc)
         # train_last_tmp_acc = np.array(train_last_tmp_acc)
 
-        logger.log_accs_table(
-            name='buffer_task_accs_table', accs_list=buffer_tmp_acc,
-            step=agent.total_step+1, verbose=True
-        )
-        logger.log_accs_table(
-            name='buffer_last_task_accs_table', accs_list=buffer_last_tmp_acc,
-            step=agent.total_step+1, verbose=True
-        )
+        # logger.log_accs_table(
+        #     name='buffer_task_accs_table', accs_list=buffer_tmp_acc,
+        #     step=agent.total_step+1, verbose=True
+        # )
+        # logger.log_accs_table(
+        #     name='buffer_last_task_accs_table', accs_list=buffer_last_tmp_acc,
+        #     step=agent.total_step+1, verbose=True
+        # )
 
         # logger.log_accs_table(
         #     name='train_task_accs_table', accs_list=train_tmp_acc,

@@ -8,7 +8,7 @@ from torchvision import datasets, transforms
 from experiment.tinyimagenet import MyTinyImagenet
 
 
-def get_cifar_data(dataset_name, batch_size, n_workers):
+def get_cifar_data(dataset_name, batch_size, n_workers, **kwargs):
     data = {}
     size = [3, 32, 32]
     if dataset_name == "cifar10":

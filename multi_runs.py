@@ -32,7 +32,7 @@ def multiple_run(args):
         print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         print('=' * 100)
         data, class_num, class_per_task, task_loader, input_size = get_data(
-            dataset_name=args.dataset, batch_size=args.batch_size, n_workers=args.n_workers
+            dataset_name=args.dataset, batch_size=args.batch_size, n_workers=args.n_workers, n_tasks=args.n_tasks
         )
         args.n_classes = class_num
 

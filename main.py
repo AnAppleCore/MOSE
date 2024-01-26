@@ -19,6 +19,7 @@ def get_params():
     parser = argparse.ArgumentParser()
     # experiment related
     parser.add_argument('--dataset',            default='cifar10',  type=str, choices=DATASETS.keys())
+    parser.add_argument('--n_tasks',            default='10',       type=int)
     parser.add_argument('--buffer_size',        default=200,        type=int)
     parser.add_argument('--method',             default='mose',     type=str, choices=METHODS.keys())
 

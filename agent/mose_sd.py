@@ -13,7 +13,7 @@ from utils import get_transform
 from utils.rotation_transform import RandomFlip
 
 
-class MOSE(object):
+class MOSE_SD(object):
     def __init__(self, model:nn.Module, buffer, optimizer, input_size, args):
         self.model = model
         self.optimizer = optimizer
@@ -118,7 +118,7 @@ class MOSE(object):
                         proj_list = self.model.head(feat_list, use_proj=True)
                         pred_list = self.model.head(feat_list, use_proj=False)
 
-                        stu_feat = feat_list[self.expert]
+                        stu_feat = feat_list[0]
                         stu_feat = self.model.final_addaption_layer(stu_feat)
 
                         for i in range(len(feat_list)):
@@ -144,7 +144,7 @@ class MOSE(object):
 
                             # feature distillation loss
                             distill_loss = 0.
-                            if i != self.expert:
+                            if i != 0:
                                 distill_loss = torch.dist(
                                     F.normalize(stu_feat, dim=1), 
                                     F.normalize(feat.detach(), dim=1), p=2
@@ -169,7 +169,7 @@ class MOSE(object):
                         proj_list = self.model.head(feat_list, use_proj=True)
                         pred_list = self.model.head(feat_list, use_proj=False)
 
-                        stu_feat = feat_list[self.expert]
+                        stu_feat = feat_list[0]
                         stu_feat = self.model.final_addaption_layer(stu_feat)
 
                         for i in range(len(feat_list)):
@@ -185,7 +185,7 @@ class MOSE(object):
 
                             # feature distillation loss
                             distill_loss = 0.
-                            if i != self.expert:
+                            if i != 0:
                                 distill_loss = torch.dist(
                                     F.normalize(stu_feat, dim=1), 
                                     F.normalize(feat.detach(), dim=1), p=2
@@ -222,236 +222,62 @@ class MOSE(object):
             # self.buffer.print_per_task_num()
         return train_log_holder
 
-    def test(self, i, task_loader, feat_ids=[0,1,2,3]):
+    def test(self, i, task_loader):
         self.model.eval()
         if self.use_ncm:
             # calculate the class means for each feature layer
-            print("\nCalculate class means for each layer...\n")
-            self.class_means_ls = [{} for _ in range(4)]
+            print("\nCalculate class means...\n")
+            self.class_means = {}
             class_inputs = {cls: [] for cls in self.class_holder}
             for x, y in zip(self.buffer.x, self.buffer.y_int):
                 class_inputs[y.item()].append(x)
 
             for cls, inputs in class_inputs.items():
-                features = [[] for _ in range(4)]
+                features = []
                 for ex in inputs:
-                    return_features_ls = self.model.features(ex.unsqueeze(0))
-                    for feat_id in range(4):
-                        feature = return_features_ls[feat_id].detach().clone()
-                        feature = F.normalize(feature, dim=1)
-                        features[feat_id].append(feature.squeeze())
+                    feature = self.model.final_feature(ex.unsqueeze(0))
+                    feature = feature.detach().clone()
+                    feature = F.normalize(feature, dim=1)
+                    features.append(feature.squeeze())
 
-                for feat_id in range(4):
-                    if len(features[feat_id]) == 0:
-                        mu_y = torch.normal(
-                            0, 1, size=tuple(self.model.features(x.unsqueeze(0))[feat_id].detach().size())
-                        )
-                        mu_y = mu_y.to(x.device)
-                    else:
-                        features[feat_id] = torch.stack(features[feat_id])
-                        mu_y = features[feat_id].mean(0)
+                if len(features) == 0:
+                    mu_y = torch.normal(
+                        0, 1, size=tuple(self.model.final_feature(x.unsqueeze(0)).detach().size())
+                    )
+                    mu_y = mu_y.to(x.device)
+                else:
+                    features = torch.stack(features)
+                    mu_y = features.mean(0)
 
-                    mu_y = F.normalize(mu_y.reshape(1, -1), dim=1)
-                    self.class_means_ls[feat_id][cls] = mu_y.squeeze()
+                mu_y = F.normalize(mu_y.reshape(1, -1), dim=1)
+                self.class_means[cls] = mu_y.squeeze()
 
         all_acc_list = {'step': self.total_step}
-        # test classifier from each required layer
-        for feat_id in feat_ids:
-            print(f"{'*'*100}\nTest with the output of layer: {feat_id+1}\n")
-            with torch.no_grad():
-                acc_list = np.zeros(len(task_loader))
-                for j in range(i + 1):
-                    acc = self.test_model(task_loader[j]['test'], j, feat_id=feat_id)
-                    acc_list[j] = acc.item()
-
-                all_acc_list[str(feat_id)] = acc_list
-                print(f"tasks acc:{acc_list}")
-                print(f"tasks avg acc:{acc_list[:i+1].mean()}")
-
-        # test mean classifier
-        print(f"{'*'*100}\nTest with the mean dists output of each layer:\n")
+        print(f"{'*'*100}\nTest with the final output:\n")
         with torch.no_grad():
             acc_list = np.zeros(len(task_loader))
             for j in range(i + 1):
-                acc = self.test_model_mean(task_loader[j]['test'], j)
+                acc = self.test_model(task_loader[j]['test'], j)
                 acc_list[j] = acc.item()
 
-            all_acc_list['mean'] = acc_list
-            print(f"tasks acc:{acc_list}")
-            print(f"tasks avg acc:{acc_list[:i+1].mean()}")
-
-        # # clear the calculated class_means
-        # self.class_means_ls = None
-
-        return acc_list, all_acc_list
-
-    def test_buffer(self, i, task_loader, feat_ids=[0,1,2,3]):
-        self.model.eval()
-        all_acc_list = {'step': self.total_step}
-        # test classifier from each required layer
-        for feat_id in feat_ids:
-            print(f"{'*'*100}\nTest with the output of layer: {feat_id+1}\n")
-            with torch.no_grad():
-                acc_list = np.zeros(len(task_loader))
-                for j in range(i + 1):
-                    acc = self.test_buffer_task(j, feat_id=feat_id)
-                    acc_list[j] = acc.item()
-
-                all_acc_list[str(feat_id)] = acc_list
-                print(f"tasks acc:{acc_list}")
-                print(f"tasks avg acc:{acc_list[:i+1].mean()}")
-
-        # test mean classifier
-        print(f"{'*'*100}\nTest with the mean dists output of each layer:\n")
-        with torch.no_grad():
-            acc_list = np.zeros(len(task_loader))
-            for j in range(i + 1):
-                acc = self.test_buffer_task_mean(j)
-                acc_list[j] = acc.item()
-
-            all_acc_list['mean'] = acc_list
+            all_acc_list['3'] = acc_list
             print(f"tasks acc:{acc_list}")
             print(f"tasks avg acc:{acc_list[:i+1].mean()}")
 
         return acc_list, all_acc_list
 
-    def test_buffer_task(self, i, feat_id):
-        # test specific layer's output
-        correct = torch.full([], 0).cuda()
-        num = torch.full([], 0).cuda()
-
-        x_i, y_i, _ = self.buffer.onlysample(self.buffer.current_index, task=i)
-
-        if self.use_ncm:
-            class_means = self.class_means_ls[feat_id]
-            for x, y in zip(x_i, y_i):
-                x = x.unsqueeze(0).detach()
-                y = y.unsqueeze(0).detach()
-
-                features = self.model.features(x)[feat_id]
-                features = F.normalize(features, dim=1)
-                features = features.unsqueeze(2)
-                means = torch.stack([class_means[cls] for cls in self.class_holder])
-                means = torch.stack([means] * x.size(0))
-                means = means.transpose(1, 2)
-                features = features.expand_as(means)
-                dists = (features - means).pow(2).sum(1).squeeze(1)
-                pred = dists.min(1)[1]
-                pred = torch.Tensor(self.class_holder)[pred].to(x.device)
-
-                num += x.size()[0]
-                correct += pred.eq(y.data.view_as(pred)).sum()
-
-        else:
-            for x, y in zip(x_i, y_i):
-                x = x.unsqueeze(0).detach()
-                y = y.unsqueeze(0).detach()
-
-                pred = self.model(x)[feat_id]
-                pred = pred.data.max(1, keepdim=True)[1]
-
-                num += x.size()[0]
-                correct += pred.eq(y.data.view_as(pred)).sum()
-
-        test_accuracy = (100. * correct / num)
-        print('Buffer test task {}: Accuracy: {}/{} ({:.2f}%)'.format(i, correct, num, test_accuracy))
-        return test_accuracy
-
-    def test_buffer_task_mean(self, i):
-        # test with mean dists for all layers
-        correct = torch.full([], 0).cuda()
-        num = torch.full([], 0).cuda()
-
-        x_i, y_i, _ = self.buffer.onlysample(self.buffer.current_index, task=i)
-
-        if self.use_ncm:
-            for x, y in zip(x_i, y_i):
-                x = x.unsqueeze(0).detach()
-                y = y.unsqueeze(0).detach()
-
-                features_ls = self.model.features(x)
-                dists_ls = []
-
-                for feat_id in range(4):
-                    class_means = self.class_means_ls[feat_id]
-                    features = features_ls[feat_id]
-                    features = F.normalize(features, dim=1)
-                    features = features.unsqueeze(2)
-                    means = torch.stack([class_means[cls] for cls in self.class_holder])
-                    means = torch.stack([means] * x.size(0))
-                    means = means.transpose(1, 2)
-                    features = features.expand_as(means)
-                    dists = (features - means).pow(2).sum(1).squeeze(1)
-                    dists_ls.append(dists)
-
-                dists_ls = torch.cat([dists.unsqueeze(1) for dists in dists_ls], dim=1)
-                dists = dists_ls.mean(dim=1).squeeze(1)
-                pred = dists.min(1)[1]
-                pred = torch.Tensor(self.class_holder)[pred].to(x.device)
-
-                num += x.size()[0]
-                correct += pred.eq(y.data.view_as(pred)).sum()
-
-        else:
-            for x, y in zip(x_i, y_i):
-                x = x.unsqueeze(0).detach()
-                y = y.unsqueeze(0).detach()
-
-                pred = self.model(x)
-                pred = torch.stack(pred, dim=1)
-                pred = pred.mean(dim=1).squeeze(1)
-                pred = pred.data.max(1, keepdim=True)[1]
-
-                num += x.size()[0]
-                correct += pred.eq(y.data.view_as(pred)).sum()
-
-        test_accuracy = (100. * correct / num)
-        print('Buffer test task {}: Accuracy: {}/{} ({:.2f}%)'.format(i, correct, num, test_accuracy))
-        return test_accuracy
-
-    def test_train(self, i, task_loader, feat_ids=[0,1,2,3]):
-        # train accuracy of current task i
-        self.model.eval()
-        all_acc_list = {'step': self.total_step}
-
-        # test classifier from each required layer
-        for feat_id in feat_ids:
-            print(f"{'*'*100}\nTest with the output of layer: {feat_id+1}\n")
-            with torch.no_grad():
-                acc_list = np.zeros(len(task_loader))
-                acc = self.test_model(task_loader[i]['train'], i, feat_id=feat_id)
-                acc_list[i] = acc.item()
-
-                all_acc_list[str(feat_id)] = acc_list
-                print(f"tasks acc:{acc_list}")
-                print(f"tasks avg acc:{acc_list[:i+1].mean()}")
-
-        # test mean classifier
-        print(f"{'*'*100}\nTest with the mean dists output of each layer:\n")
-        with torch.no_grad():
-            acc_list = np.zeros(len(task_loader))
-            acc = self.test_model_mean(task_loader[i]['train'], i)
-            acc_list[i] = acc.item()
-
-            all_acc_list['mean'] = acc_list
-            print(f"tasks acc:{acc_list}")
-            print(f"tasks avg acc:{acc_list[:i+1].mean()}")
-
-        return acc_list, all_acc_list
-
-    def test_model(self, loader, i, feat_id):
+    def test_model(self, loader, i):
         # test specific layer's output
         correct = torch.full([], 0).cuda()
         num = torch.full([], 0).cuda()
         if self.use_ncm:
-            class_means = self.class_means_ls[feat_id]
             for batch_idx, (data, target) in enumerate(loader):
                 data, target = data.cuda(), target.cuda()
 
-                features = self.model.features(data)[feat_id]
+                features = self.model.final_feature(data)
                 features = F.normalize(features, dim=1)
                 features = features.unsqueeze(2)
-                means = torch.stack([class_means[cls] for cls in self.class_holder])
+                means = torch.stack([self.class_means[cls] for cls in self.class_holder])
                 means = torch.stack([means] * data.size(0))
                 means = means.transpose(1, 2)
                 features = features.expand_as(means)
@@ -466,53 +292,7 @@ class MOSE(object):
             for batch_idx, (data, target) in enumerate(loader):
                 data, target = data.cuda(), target.cuda()
 
-                pred = self.model(data)[feat_id]
-                pred = pred.data.max(1, keepdim=True)[1]
-
-                num += data.size()[0]
-                correct += pred.eq(target.data.view_as(pred)).sum()
-
-        test_accuracy = (100. * correct / num)
-        print('Test task {}: Accuracy: {}/{} ({:.2f}%)'.format(i, correct, num, test_accuracy))
-        return test_accuracy
-
-    def test_model_mean(self, loader, i):
-        # test with mean dists for all layers
-        correct = torch.full([], 0).cuda()
-        num = torch.full([], 0).cuda()
-        if self.use_ncm:
-            for batch_idx, (data, target) in enumerate(loader):
-                data, target = data.cuda(), target.cuda()
-                features_ls = self.model.features(data)
-                dists_ls = []
-
-                for feat_id in range(4):
-                    class_means = self.class_means_ls[feat_id]
-                    features = features_ls[feat_id]
-                    features = F.normalize(features, dim=1)
-                    features = features.unsqueeze(2)
-                    means = torch.stack([class_means[cls] for cls in self.class_holder])
-                    means = torch.stack([means] * data.size(0))
-                    means = means.transpose(1, 2)
-                    features = features.expand_as(means)
-                    dists = (features - means).pow(2).sum(1).squeeze()
-                    dists_ls.append(dists)
-
-                dists_ls = torch.cat([dists.unsqueeze(1) for dists in dists_ls], dim=1)
-                dists = dists_ls.mean(dim=1).squeeze(1)
-                pred = dists.min(1)[1]
-                pred = torch.Tensor(self.class_holder)[pred].to(data.device)
-
-                num += data.size()[0]
-                correct += pred.eq(target.data.view_as(pred)).sum()
-
-        else:
-            for batch_idx, (data, target) in enumerate(loader):
-                data, target = data.cuda(), target.cuda()
-
-                pred = self.model(data)
-                pred = torch.stack(pred, dim=1)
-                pred = pred.mean(dim=1).squeeze()
+                pred = self.model(data)[-1]
                 pred = pred.data.max(1, keepdim=True)[1]
 
                 num += data.size()[0]

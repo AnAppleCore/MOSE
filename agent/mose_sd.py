@@ -118,8 +118,8 @@ class MOSE_SD(object):
                         proj_list = self.model.head(feat_list, use_proj=True)
                         pred_list = self.model.head(feat_list, use_proj=False)
 
-                        stu_feat = feat_list[0]
-                        stu_feat = self.model.final_addaption_layer(stu_feat)
+                        teach_feat = feat_list[-1].detach()
+                        teach_feat = self.model.final_addaption_layer(teach_feat)
 
                         for i in range(len(feat_list)):
                             feat = feat_list[i]
@@ -144,10 +144,10 @@ class MOSE_SD(object):
 
                             # feature distillation loss
                             distill_loss = 0.
-                            if i != 0:
+                            if i != len(feat_list) - 1:
                                 distill_loss = torch.dist(
-                                    F.normalize(stu_feat, dim=1), 
-                                    F.normalize(feat.detach(), dim=1), p=2
+                                    F.normalize(teach_feat, dim=1), 
+                                    F.normalize(feat, dim=1), p=2
                                 )
 
                             loss += ins_loss + ce_loss + distill_loss
@@ -169,8 +169,8 @@ class MOSE_SD(object):
                         proj_list = self.model.head(feat_list, use_proj=True)
                         pred_list = self.model.head(feat_list, use_proj=False)
 
-                        stu_feat = feat_list[0]
-                        stu_feat = self.model.final_addaption_layer(stu_feat)
+                        teach_feat = feat_list[-1].detach()
+                        teach_feat = self.model.final_addaption_layer(teach_feat)
 
                         for i in range(len(feat_list)):
                             feat = feat_list[i]
@@ -185,10 +185,10 @@ class MOSE_SD(object):
 
                             # feature distillation loss
                             distill_loss = 0.
-                            if i != 0:
+                            if i != len(feat_list)-1:
                                 distill_loss = torch.dist(
-                                    F.normalize(stu_feat, dim=1), 
-                                    F.normalize(feat.detach(), dim=1), p=2
+                                    F.normalize(teach_feat, dim=1), 
+                                    F.normalize(feat, dim=1), p=2
                                 )
 
                             loss += ins_loss + ce_loss + distill_loss

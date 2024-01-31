@@ -92,6 +92,8 @@ class ResNet(nn.Module):
         self.simclr = nn.Linear(nf * 8 * block.expansion, 128)
         self.classifier = self.linear
 
+        self.pool = nn.AdaptiveAvgPool2d((1, 1))
+
     def _make_layer(self, block: BasicBlock, planes: int,
                     num_blocks: int, stride: int) -> nn.Module:
         """
@@ -115,7 +117,7 @@ class ResNet(nn.Module):
         out = self.layer2(out)  
         out = self.layer3(out)  
         out = self.layer4(out)  
-        out = avg_pool2d(out, out.shape[2])  
+        out = self.pool(out)
         out = out.view(out.size(0), -1)  
         return out
 

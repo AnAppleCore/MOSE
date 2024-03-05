@@ -11,6 +11,7 @@ METHOD_2_MODEL = {
     'mose_moe': resnet18_sd,
     'mose_msd': resnet18_msd,
     'mose_sd': resnet18_sd,
+    'mose_mix': resnet18_sd,
 }
 
 def get_model(method_name,  *args, **kwargs):

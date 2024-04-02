@@ -3,10 +3,6 @@ from .scr import *
 from .mose import *
 from .joint import *
 from .buf import *
-from .mose_moe import *
-from .mose_msd import *
-from .mose_sd import *
-from .mose_mix import *
 
 
 METHODS = {
@@ -15,10 +11,6 @@ METHODS = {
     'mose': MOSE,
     'joint': Joint,
     'buf': Buf,
-    'mose_moe': MOSE_MOE,
-    'mose_msd': MOSE_MSD,
-    'mose_sd': MOSE_SD,
-    'mose_mix': MOSE_MIX
 }
 
 

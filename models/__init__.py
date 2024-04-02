@@ -1,6 +1,5 @@
 from .Resnet18 import resnet18
 from .Resnet18_SD import resnet18_sd
-from .Resnet18_MSD import resnet18_msd
 
 METHOD_2_MODEL = {
     'er': resnet18,
@@ -8,10 +7,6 @@ METHOD_2_MODEL = {
     'joint': resnet18,
     'buf': resnet18,
     'mose': resnet18_sd,
-    'mose_moe': resnet18_sd,
-    'mose_msd': resnet18_msd,
-    'mose_sd': resnet18_sd,
-    'mose_mix': resnet18_sd,
 }
 
 def get_model(method_name,  *args, **kwargs):

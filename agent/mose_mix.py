@@ -58,8 +58,8 @@ class MOSE_MIX(object):
         return loss
 
     def mix_mse(self, stu_feat, tea_feat):
-        stu_feat = F.normalize(stu_feat, dim=1)
-        tea_feat = F.normalize(tea_feat, dim=1)
+        # stu_feat = F.normalize(stu_feat, dim=1)
+        # tea_feat = F.normalize(tea_feat, dim=1)
         loss = self.pdst(stu_feat, tea_feat)
         return loss
 

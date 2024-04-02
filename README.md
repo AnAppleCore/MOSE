@@ -1,5 +1,5 @@
 # MOSE
-Official implementation of [MOSE](links.here) for online continual learning (CVPR2024).
+Official implementation of [MOSE](https://arxiv.org/abs/2404.00417) for online continual learning (CVPR2024).
 
 ## Introduction
 
@@ -61,3 +61,8 @@ If you found this code or our work useful, please cite us:
     primaryClass={cs.LG}
 }
 ```
+
+## Contact
+If you have any questions or concerns, please feel free to contact us or leave a issue:
+
+- Hongwei Yan: yanhw22@mails.tsinghua.edu.cn

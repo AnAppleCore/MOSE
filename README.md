@@ -47,6 +47,7 @@ Thanks the following code bases for their framework and ideas:
 - [OnPro](https://github.com/weilllllls/OnPro)
 - [GSA](https://github.com/gydpku/GSA)
 - [OCM](https://github.com/gydpku/OCM)
+- [Awesome-Incremental-Learning](https://github.com/xialeiliu/Awesome-Incremental-Learning)
 
 ## Citation
 If you found this code or our work useful, please cite us:
@@ -63,6 +64,6 @@ If you found this code or our work useful, please cite us:
 ```
 
 ## Contact
-If you have any questions or concerns, please feel free to contact us or leave a issue:
+If you have any questions or concerns, please feel free to contact us or leave an issue:
 
 - Hongwei Yan: yanhw22@mails.tsinghua.edu.cn

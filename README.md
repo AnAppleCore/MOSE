@@ -53,13 +53,12 @@ Thanks the following code bases for their framework and ideas:
 If you found this code or our work useful, please cite us:
 
 ```bibtex
-@misc{yan2024orchestrate,
-    title={Orchestrate Latent Expertise: Advancing Online Continual Learning with Multi-Level Supervision and Reverse Self-Distillation}, 
-    author={HongWei Yan and Liyuan Wang and Kaisheng Ma and Yi Zhong},
-    year={2024},
-    eprint={2404.00417},
-    archivePrefix={arXiv},
-    primaryClass={cs.LG}
+@inproceedings{yan2024orchestrate,
+  title={Orchestrate Latent Expertise: Advancing Online Continual Learning with Multi-Level Supervision and Reverse Self-Distillation},
+  author={Yan, Hongwei and Wang, Liyuan and Ma, Kaisheng and Zhong, Yi},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={23670--23680},
+  year={2024}
 }
 ```
 

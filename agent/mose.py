@@ -31,11 +31,16 @@ class MOSE(object):
 
         if args.dataset == "cifar10":
             self.total_samples = 10000
+            self.print_num = self.total_samples // 5
         elif "cifar100" in args.dataset:
             self.total_samples = 5000
+            self.print_num = self.total_samples // 10
         elif args.dataset == "tiny_imagenet":
             self.total_samples = 1000
-        self.print_num = self.total_samples // 10
+            self.print_num = self.total_samples // 10
+        elif args.dataset == "mnist":
+            self.total_samples = 6000
+            self.print_num = self.total_samples // 5
 
         self.transform = get_transform(args.augmentation, input_size)
 

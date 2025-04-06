@@ -1,4 +1,6 @@
+import kornia.augmentation as K
 import torch.nn as nn
+from kornia.augmentation.auto import RandAugment, TrivialAugment
 
 from .my_transform import *
 
@@ -22,8 +24,12 @@ def get_transform(transform_name, input_size):
             ColorJitterLayer(0.8, 0.4, 0.4, 0.4, 0.1),
             RandomColorGrayLayer(p=0.2)
         )
+    elif transform_name == 'randaug':
+        transform = K.AugmentationSequential(RandAugment(2, 10),)
+    elif transform_name == 'trivial':
+        transform = K.AugmentationSequential(TrivialAugment(),)
     else:
         return None
 
-    transform = transform.cuda()
+    transform = transform.cuda() if isinstance(transform, nn.Module) else transform
     return transform

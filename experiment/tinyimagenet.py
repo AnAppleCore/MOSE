@@ -37,6 +37,12 @@ class TinyImagenet(Dataset):
 
                     dest_path=os.path.join(root, 'tiny-imagenet-processed.zip'),
                     unzip=True)
+            
+            if not os.path.isdir(os.path.join(root, 'processed')):
+                # unzip
+                import zipfile
+                with zipfile.ZipFile(os.path.join(root, 'tiny-imagenet-processed.zip'), 'r') as zip_ref:
+                    zip_ref.extractall(root)
 
         self.data = []
         for num in range(20):

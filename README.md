@@ -65,4 +65,4 @@ If you found this code or our work useful, please cite us:
 ## Contact
 If you have any questions or concerns, please feel free to contact us or leave an issue:
 
-- Hongwei Yan: yanhw22@mails.tsinghua.edu.cn
+- Hongwei Yan: yanhw22[at]mails.tsinghua.edu.cn

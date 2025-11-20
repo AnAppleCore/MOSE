@@ -1,4 +1,5 @@
 import datetime
+import os
 
 import numpy as np
 import torch
@@ -39,12 +40,12 @@ def multiple_run(args):
         setattr(args, 'run_name', f"{args.exp_name} run_{run:02d}")
         print(f"\nRun {run}: {args.run_name} {'*' * 50}\n")
         logger = Logger(args, base_dir=f"./outputs/{args.method}/{args.dataset}")
-        
+
         buffer = Buffer(args, input_size).cuda()
         model = get_model(method_name=args.method, nclasses=class_num).cuda()
         optimizer = Adam(model.parameters(), args.lr, weight_decay=args.wd)
         agent = get_agent(
-            method_name=args.method, model=model, 
+            method_name=args.method, model=model,
             buffer=buffer, optimizer=optimizer, input_size=input_size, args=args
         )
 
@@ -83,7 +84,7 @@ def multiple_run(args):
 
         test_accuracy = acc_list.mean()
         test_all_acc[run] = test_accuracy
-        
+
         tmp_acc = np.array(tmp_acc)
         avg_fgt = (tmp_acc.max(0) - tmp_acc[-1, :]).mean()
         avg_bwt = (tmp_acc[-1, :] - np.diagonal(tmp_acc)).mean()
@@ -147,6 +148,11 @@ def multiple_run(args):
         #     step=agent.total_step+1, verbose=True
         # )
 
+
+        if getattr(args, 'save_ckpt', 'off') == 'on':
+            ckpt_path = os.path.join(logger.folder_path, 'final.pt')
+            agent.save_checkpoint(ckpt_path)
+
         print('=' * 100)
         print("{}th run's Test result: Accuracy: {:.2f}%".format(run, test_accuracy))
         print('=' * 100)
@@ -168,3 +174,6 @@ def multiple_run(args):
     print('----------- Avg_End_Acc {} Avg_End_Fgt {} Avg_Acc {} Avg_Bwtp {} Avg_Fwt {}-----------'
           .format(avg_end_acc, avg_end_fgt, avg_acc, avg_bwtp, avg_fwt))
     print('=' * 100)
+
+    # Mark the end time of the whole training run(s) for log-based timing
+    print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))

@@ -229,6 +229,16 @@ class MOSE(object):
 
     def test(self, i, task_loader, feat_ids=[0,1,2,3]):
         self.model.eval()
+        # We may load from checkpoint without a filled buffer or class_holder.
+        # In that case, NCM cannot be used; fall back to classifier head.
+        orig_use_ncm = self.use_ncm
+        if self.use_ncm:
+            y_int = getattr(self.buffer, "y_int", None) if hasattr(self, "buffer") else None
+            if (len(self.class_holder) == 0) or (y_int is None) or (len(y_int) == 0):
+                print("\n[MOSE.test] Buffer or class_holder is empty; "
+                      "skip NCM prototypes and use classifier head instead.\n")
+                self.use_ncm = False
+
         if self.use_ncm:
             # calculate the class means for each feature layer
             print("\nCalculate class means for each layer...\n")
@@ -288,6 +298,8 @@ class MOSE(object):
         # # clear the calculated class_means
         # self.class_means_ls = None
 
+        # restore original setting
+        self.use_ncm = orig_use_ncm
         return acc_list, all_acc_list
 
     def test_buffer(self, i, task_loader, feat_ids=[0,1,2,3]):

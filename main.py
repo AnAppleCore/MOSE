@@ -32,6 +32,7 @@ def get_params():
     parser.add_argument('--buffer_batch_size',  default=64,         type=int)
 
     parser.add_argument('--continual',          default='on',       type=str, choices=['off', 'on'])
+    parser.add_argument('--save_ckpt',          default='off',      type=str, choices=['off', 'on'])
 
     # mose control
     parser.add_argument('--ins_t',              default=0.07,       type=float)

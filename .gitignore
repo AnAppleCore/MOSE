@@ -167,3 +167,6 @@ cython_debug/
 **/wandb/
 *.sh
 *.bat
+
+data
+evaluate_result.txt

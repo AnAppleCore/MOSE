@@ -3,6 +3,7 @@ from .scr import *
 from .mose import *
 from .joint import *
 from .buf import *
+from .gsa import *
 
 
 METHODS = {
@@ -11,6 +12,7 @@ METHODS = {
     'mose': MOSE,
     'joint': Joint,
     'buf': Buf,
+    'gsa': GSA,
 }
 
 

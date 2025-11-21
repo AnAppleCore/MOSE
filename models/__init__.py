@@ -3,10 +3,11 @@ from .Resnet18_SD import resnet18_sd
 
 METHOD_2_MODEL = {
     'er': resnet18,
-    'scr': resnet18, 
+    'scr': resnet18,
     'joint': resnet18,
     'buf': resnet18,
     'mose': resnet18_sd,
+    'gsa': resnet18,
 }
 
 def get_model(method_name,  *args, **kwargs):

@@ -194,8 +194,9 @@ def main() -> None:
         args=train_args,
     )
 
-    # Estimate FLOPs per sample (forward pass) and training time (from log)
     flops_per_sample = estimate_flops_per_sample(model, input_size, device)
+    if flops_per_sample is not None and getattr(train_args, "method", None) == "mose":
+        flops_per_sample *= 0.75 # to eliminate the misrouting /repeated calculation of multi heads for evaluation (3 of 4 heads)
     train_minutes = parse_train_time_minutes(args.train_log) if args.train_log else None
 
     print("=" * 100)
